@@ -178,6 +178,12 @@ bool GLContainer::event(QEvent * event)
         //std::cout << "resize\n";
     }
 
+    if(_glWidget->GetShouldUpdateScrolls())
+    {
+        SetScrolls();
+        _glWidget->SetShouldUpdateScrolls(false);
+    }
+
     bool evResult = QAbstractScrollArea::event(event);
     return evResult;
 }

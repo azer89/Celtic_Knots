@@ -10,12 +10,23 @@
 
 #include "AVector.h"
 #include "ALine.h"
+#include "CCell.h"
 
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
 
 private:
+    std::vector<std::vector<CCell>> _cells;
+    QSize _gridSize;
+    QSize _actualGridSize;
+    float _gridSpacing;
+
+    // cell lines
+    std::vector<ALine> _cellLines;
+    QOpenGLBuffer               _cellLinesVbo;
+    QOpenGLVertexArrayObject    _cellLinesVao;
+
     bool    _isMouseDown;
     float   _zoomFactor;
     QPoint  _scrollOffset;
@@ -42,14 +53,19 @@ private:
     QMatrix4x4  _perspMatrix;
     QMatrix4x4  _transformMatrix;
 
+    bool _shouldUpdateScrolls;
+
 private:
-   void InitCurve();
-   void PaintCurve();
-   void CreateCurveVAO();
+    void InitCells();
 
-   void SaveToSvg();
 
-   void PreparePointsVAO(std::vector<AVector> points, QOpenGLBuffer* ptsVbo, QOpenGLVertexArrayObject* ptsVao, QVector3D vecCol);
+    void InitCurve();        // demo
+    void PaintCurve();       // demo
+    void CreateCurveVAO();
+
+    void SaveToSvg();
+
+    void PreparePointsVAO(std::vector<AVector> points, QOpenGLBuffer* ptsVbo, QOpenGLVertexArrayObject* ptsVao, QVector3D vecCol);
     void PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
 
 protected:
@@ -95,6 +111,9 @@ public:
     void mouseReleaseEvent(int x, int y);
     // mouse double click
     void mouseDoubleClick(int x, int y);
+
+    bool GetShouldUpdateScrolls() { return _shouldUpdateScrolls; }
+    void SetShouldUpdateScrolls(bool val) { _shouldUpdateScrolls = val; }
 };
 
 #endif // GLWIDGET_H

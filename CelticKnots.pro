@@ -22,7 +22,8 @@ HEADERS  += mainwindow.h \
     GLWidget.h \
     AVector.h \
     VertexData.h \
-    ALine.h
+    ALine.h \
+    CCell.h
 
 FORMS    += mainwindow.ui
 

@@ -16,7 +16,8 @@ GLWidget::GLWidget(QGLFormat format, QWidget *parent) :
     _zoomFactor(10.0),
     _shaderProgram(0),
     _img_width(50),
-    _img_height(50)
+    _img_height(50),
+    _shouldUpdateScrolls(false)
 {
 }
 
@@ -51,8 +52,10 @@ void GLWidget::initializeGL()
     _mvpMatrixLocation = _shaderProgram->uniformLocation("mvpMatrix");
     _colorLocation = _shaderProgram->attributeLocation("vertexColor");
 
-    InitCurve();
-    CreateCurveVAO();
+    //InitCurve();
+    //CreateCurveVAO();
+
+    InitCells();
 }
 
 bool GLWidget::event( QEvent * event )
@@ -91,7 +94,20 @@ void GLWidget::paintGL()
 
     _shaderProgram->setUniformValue(_mvpMatrixLocation, orthoMatrix * transformMatrix);
 
-    PaintCurve();
+
+
+    if(_cellLinesVao.isCreated())
+    {
+        int use_color_location = _shaderProgram->uniformLocation("use_color");
+        _shaderProgram->setUniformValue(use_color_location, (GLfloat)1.0);
+
+        glLineWidth(0.5f);
+        _cellLinesVao.bind();
+        glDrawArrays(GL_LINES, 0, _cellLines.size() * 2);
+        _cellLinesVao.release();
+    }
+
+    //PaintCurve();
 }
 
 // Mouse is pressed
@@ -156,6 +172,55 @@ void GLWidget::HorizontalScroll(int val) { _scrollOffset.setX(val); }
 void GLWidget::VerticalScroll(int val) { _scrollOffset.setY(val); }
 void GLWidget::ZoomIn() { this->_zoomFactor += 0.5f; }
 void GLWidget::ZoomOut() { this->_zoomFactor -= 0.5f; if(this->_zoomFactor < 0.1f) _zoomFactor = 0.1f; }
+
+void GLWidget::InitCells()
+{
+    _cells.clear();
+    _gridSpacing = 10;
+    _gridSize = QSize(3, 3);
+
+    // add one row and one column
+    _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );
+
+    _img_width  = (_actualGridSize.width() - 1) * _gridSpacing;
+    _img_height = (_actualGridSize.height() - 1) * _gridSpacing;
+
+    for(size_t a = 0; a < _actualGridSize.width(); a++)
+    {
+        _cells.push_back(std::vector<CCell>(_actualGridSize.height()));
+
+        for(size_t b = 0; b < _actualGridSize.height(); b++)
+        {
+            // something here
+        }
+    }
+
+
+    // vao
+    _cellLines.clear();
+    for(size_t a = 0; a < _actualGridSize.width() - 1; a++)
+    {
+        for(size_t b = 0; b < _actualGridSize.height() - 1; b++)
+        {
+            AVector upLeftPt(a * _gridSpacing, b * _gridSpacing);
+            AVector upRightPt((a + 1) * _gridSpacing, b * _gridSpacing);
+            AVector bottomLeftPt(a * _gridSpacing, (b + 1) * _gridSpacing);
+            AVector bottomRightPt((a + 1) * _gridSpacing, (b + 1) * _gridSpacing);
+
+            _cellLines.push_back(ALine(upLeftPt, upRightPt));
+            _cellLines.push_back(ALine(upLeftPt, bottomLeftPt));
+
+            if(a == _actualGridSize.width() - 2)
+                { _cellLines.push_back(ALine(upRightPt, bottomRightPt)); }
+
+            if(b == _actualGridSize.height() - 2)
+                { _cellLines.push_back(ALine(bottomLeftPt, bottomRightPt)); }
+        }
+    }
+    PrepareLinesVAO(_cellLines, &_cellLinesVbo, &_cellLinesVao, QVector3D(0.0, 0.0, 0.0));
+
+    _shouldUpdateScrolls = true;
+}
 
 void GLWidget::InitCurve()
 {
