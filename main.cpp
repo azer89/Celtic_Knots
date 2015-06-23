@@ -1,3 +1,8 @@
+
+/*
+ * Reza Adhitya Saputra
+ */
+
 #include "mainwindow.h"
 #include <QApplication>
 

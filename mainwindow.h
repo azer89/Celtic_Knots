@@ -1,3 +1,8 @@
+
+/*
+ * Reza Adhitya Saputra
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
