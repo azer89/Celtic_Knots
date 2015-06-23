@@ -23,9 +23,12 @@ private:
     float _gridSpacing;
 
     // cell lines
-    std::vector<ALine> _cellLines;
+    std::vector<ALine>          _cellLines;
     QOpenGLBuffer               _cellLinesVbo;
     QOpenGLVertexArrayObject    _cellLinesVao;
+
+    QOpenGLBuffer               _dotsVbo;
+    QOpenGLVertexArrayObject    _dotsVao;
 
     bool    _isMouseDown;
     float   _zoomFactor;
@@ -57,7 +60,7 @@ private:
 
 private:
     void InitCells();
-
+    void InitDots();
 
     void InitCurve();        // demo
     void PaintCurve();       // demo

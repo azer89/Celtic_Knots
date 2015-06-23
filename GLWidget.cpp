@@ -56,6 +56,7 @@ void GLWidget::initializeGL()
     //CreateCurveVAO();
 
     InitCells();
+    InitDots();
 }
 
 bool GLWidget::event( QEvent * event )
@@ -95,6 +96,25 @@ void GLWidget::paintGL()
     _shaderProgram->setUniformValue(_mvpMatrixLocation, orthoMatrix * transformMatrix);
 
 
+    if(_dotsVao.isCreated())
+    {
+        int use_color_location = _shaderProgram->uniformLocation("use_color");
+        _shaderProgram->setUniformValue(use_color_location, (GLfloat)1.0);
+
+        int verticesPerDot = 4 + 2;
+
+        _dotsVao.bind();
+
+        size_t nDots = _gridSize.width() * _gridSize.height();
+        nDots += (_gridSize.width() + 1) * (_gridSize.height() + 1);
+
+        for(size_t a = 0; a < nDots; a++)
+        {
+            glDrawArrays(GL_TRIANGLE_FAN, a * verticesPerDot, verticesPerDot);
+        }
+        _dotsVao.release();
+    }
+
 
     if(_cellLinesVao.isCreated())
     {
@@ -106,6 +126,8 @@ void GLWidget::paintGL()
         glDrawArrays(GL_LINES, 0, _cellLines.size() * 2);
         _cellLinesVao.release();
     }
+
+
 
     //PaintCurve();
 }
@@ -177,7 +199,7 @@ void GLWidget::InitCells()
 {
     _cells.clear();
     _gridSpacing = 10;
-    _gridSize = QSize(3, 3);
+    _gridSize = QSize(10, 5);
 
     // add one row and one column
     _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );
@@ -188,13 +210,25 @@ void GLWidget::InitCells()
     for(size_t a = 0; a < _actualGridSize.width(); a++)
     {
         _cells.push_back(std::vector<CCell>(_actualGridSize.height()));
+    }
 
-        for(size_t b = 0; b < _actualGridSize.height(); b++)
+    // ONE
+    for(size_t a = 0; a < _actualGridSize.width(); a += 2)
+    {
+        for(size_t b = 0; b < _actualGridSize.height(); b += 2)
         {
-            // something here
+            _cells[a][b]._cellSign = CellSign::SIGN_ONE;
         }
     }
 
+    // TWO
+    for(size_t a = 1; a < _actualGridSize.width(); a += 2)
+    {
+        for(size_t b = 1; b < _actualGridSize.height(); b += 2)
+        {
+            _cells[a][b]._cellSign = CellSign::SIGN_TWO;
+        }
+    }
 
     // vao
     _cellLines.clear();
@@ -222,10 +256,91 @@ void GLWidget::InitCells()
     _shouldUpdateScrolls = true;
 }
 
+void GLWidget::InitDots()
+{
+    if(_dotsVao.isCreated())
+    {
+        _dotsVao.destroy();
+    }
+    _dotsVao.create();
+    _dotsVao.bind();
+
+    float radius = 1.0f;
+
+    QVector<VertexData> vertices;
+
+    // ONE
+    for(size_t a = 0; a < _actualGridSize.width(); a += 2)
+    {
+        for(size_t b = 0; b < _actualGridSize.height(); b += 2)
+        {
+            int xCenter = a * _gridSpacing;
+            int yCenter = b * _gridSpacing;
+            QVector3D vecCol = QVector3D(1, 0, 0);
+
+            vertices.append(VertexData(QVector3D(xCenter, yCenter,  0.0f), QVector2D(), vecCol));
+            float addValue = (M_PI * 2.0 / 4);
+            for(float a = 0.0; a < M_PI * 2.0; a += addValue)
+            {
+                float xPt = xCenter + radius * sin(a);
+                float yPt = yCenter + radius * cos(a);
+                vertices.append(VertexData(QVector3D(xPt, yPt,  0.0f), QVector2D(), vecCol));
+            }
+            float xPt = xCenter + radius * sin(M_PI * 2.0);
+            float yPt = yCenter + radius * cos(M_PI * 2.0);
+            vertices.append(VertexData(QVector3D(xPt, yPt,  0.0f), QVector2D(), vecCol));
+
+        }
+    }
+
+    // TWO
+    for(size_t a = 1; a < _actualGridSize.width(); a += 2)
+    {
+        for(size_t b = 1; b < _actualGridSize.height(); b += 2)
+        {
+            int xCenter = a * _gridSpacing;
+            int yCenter = b * _gridSpacing;
+            QVector3D vecCol = QVector3D(0, 0, 1);
+
+            vertices.append(VertexData(QVector3D(xCenter, yCenter,  0.0f), QVector2D(), vecCol));
+            float addValue = (M_PI * 2.0 / 4);
+            for(float a = 0.0; a < M_PI * 2.0; a += addValue)
+            {
+                float xPt = xCenter + radius * sin(a);
+                float yPt = yCenter + radius * cos(a);
+                vertices.append(VertexData(QVector3D(xPt, yPt,  0.0f), QVector2D(), vecCol));
+            }
+            float xPt = xCenter + radius * sin(M_PI * 2.0);
+            float yPt = yCenter + radius * cos(M_PI * 2.0);
+            vertices.append(VertexData(QVector3D(xPt, yPt,  0.0f), QVector2D(), vecCol));
+
+        }
+    }
+
+    _dotsVbo.create();
+    _dotsVbo.bind();
+    _dotsVbo.allocate(vertices.data(), vertices.size() * sizeof(VertexData));
+
+    // reuse the variable
+    quintptr offset = 0;
+
+    int vertexLocation = _shaderProgram->attributeLocation("vert");
+    _shaderProgram->enableAttributeArray(vertexLocation);
+    _shaderProgram->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(VertexData));
+
+    offset += sizeof(QVector3D);
+    offset += sizeof(QVector2D);
+
+    _shaderProgram->enableAttributeArray(_colorLocation);
+    _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+    _dotsVao.release();
+
+}
+
 void GLWidget::InitCurve()
 {
     _points.clear();
-
     AVector centerPt(this->_img_width / 2, this->_img_height / 2);
 
     float addValue = (M_PI * 2.0 / (float)16);
