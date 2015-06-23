@@ -3,15 +3,15 @@
 
 enum CellSign
 {
-    SIGN_ONE,
-    SIGN_TWO,
-    SIGN_EMPTY,
+    SIGN_ONE = 0,
+    SIGN_TWO = 1,
+    SIGN_EMPTY = 2,
 };
 
 enum CellBreakMarker
 {
-    BREAK_MARKER_BREAK,
-    BREAK_MARKER_EMPTY,
+    BREAK_MARKER_BREAK = 0,
+    BREAK_MARKER_EMPTY = 1,
 };
 
 

@@ -96,6 +96,17 @@ void GLWidget::paintGL()
     _shaderProgram->setUniformValue(_mvpMatrixLocation, orthoMatrix * transformMatrix);
 
 
+    if(_breakScribbleVao.isCreated() && _isMouseDown)
+    {
+        int use_color_location = _shaderProgram->uniformLocation("use_color");
+        _shaderProgram->setUniformValue(use_color_location, (GLfloat)1.0);
+
+        glLineWidth(2.0f);
+        _breakScribbleVao.bind();
+        glDrawArrays(GL_LINES, 0, 2);
+        _breakScribbleVao.release();
+    }
+
     if(_dotsVao.isCreated())
     {
         int use_color_location = _shaderProgram->uniformLocation("use_color");
@@ -105,10 +116,10 @@ void GLWidget::paintGL()
 
         _dotsVao.bind();
 
-        size_t nDots = _gridSize.width() * _gridSize.height();
+        uint nDots = _gridSize.width() * _gridSize.height();
         nDots += (_gridSize.width() + 1) * (_gridSize.height() + 1);
 
-        for(size_t a = 0; a < nDots; a++)
+        for(uint a = 0; a < nDots; a++)
         {
             glDrawArrays(GL_TRIANGLE_FAN, a * verticesPerDot, verticesPerDot);
         }
@@ -143,6 +154,9 @@ void GLWidget::mousePressEvent(int x, int y)
     double dy = y + _scrollOffset.y();
     dy /= _zoomFactor;
 
+    _breakScribbleLine.XA = dx;
+    _breakScribbleLine.YA = dy;
+
     this->repaint();
 }
 
@@ -155,7 +169,18 @@ void GLWidget::mouseMoveEvent(int x, int y)
     double dy = y + _scrollOffset.y();
     dy /= _zoomFactor;
 
-    // your stuff
+    if(_isMouseDown)
+    {
+        _breakScribbleLine.XB = dx;
+        _breakScribbleLine.YB = dy;
+
+        std::cout << _breakScribbleLine.XA << " - " << _breakScribbleLine.YA << " --- " <<
+                     _breakScribbleLine.XB << " - " << _breakScribbleLine.YB << "\n";
+
+        std::vector<ALine> linev;
+        linev.push_back(_breakScribbleLine);
+        PrepareLinesVAO(linev, &_breakScribbleVbo, &_breakScribbleVao, QVector3D(1.0, 0.0, 0.0));
+    }
 
     this->repaint();
 }
@@ -207,10 +232,11 @@ void GLWidget::InitCells()
     _img_width  = (_actualGridSize.width() - 1) * _gridSpacing;
     _img_height = (_actualGridSize.height() - 1) * _gridSpacing;
 
-    for(size_t a = 0; a < _actualGridSize.width(); a++)
+    for(uint a = 0; a < _actualGridSize.width(); a++)
     {
         _cells.push_back(std::vector<CCell>(_actualGridSize.height()));
     }
+
 
     // ONE
     for(size_t a = 0; a < _actualGridSize.width(); a += 2)
@@ -232,9 +258,9 @@ void GLWidget::InitCells()
 
     // vao
     _cellLines.clear();
-    for(size_t a = 0; a < _actualGridSize.width() - 1; a++)
+    for(uint a = 0; a < _actualGridSize.width() - 1; a++)
     {
-        for(size_t b = 0; b < _actualGridSize.height() - 1; b++)
+        for(uint b = 0; b < _actualGridSize.height() - 1; b++)
         {
             AVector upLeftPt(a * _gridSpacing, b * _gridSpacing);
             AVector upRightPt((a + 1) * _gridSpacing, b * _gridSpacing);
@@ -270,9 +296,9 @@ void GLWidget::InitDots()
     QVector<VertexData> vertices;
 
     // ONE
-    for(size_t a = 0; a < _actualGridSize.width(); a += 2)
+    for(uint a = 0; a < _actualGridSize.width(); a += 2)
     {
-        for(size_t b = 0; b < _actualGridSize.height(); b += 2)
+        for(uint b = 0; b < _actualGridSize.height(); b += 2)
         {
             int xCenter = a * _gridSpacing;
             int yCenter = b * _gridSpacing;
@@ -294,9 +320,9 @@ void GLWidget::InitDots()
     }
 
     // TWO
-    for(size_t a = 1; a < _actualGridSize.width(); a += 2)
+    for(uint a = 1; a < _actualGridSize.width(); a += 2)
     {
-        for(size_t b = 1; b < _actualGridSize.height(); b += 2)
+        for(uint b = 1; b < _actualGridSize.height(); b += 2)
         {
             int xCenter = a * _gridSpacing;
             int yCenter = b * _gridSpacing;
@@ -361,7 +387,7 @@ void GLWidget::CreateCurveVAO()
     // LINES VAO
     vecCol = QVector3D(0.0, 0.5, 1.0);
     std::vector<ALine> lines;
-    for(size_t a = 0; a < _points.size(); a++)
+    for(uint a = 0; a < _points.size(); a++)
     {
         if(a < _points.size() - 1) { lines.push_back(ALine(_points[a], _points[a + 1])); }
         else { lines.push_back(ALine(_points[a], _points[0])); }
@@ -380,7 +406,7 @@ void GLWidget::PreparePointsVAO(std::vector<AVector> points, QOpenGLBuffer* ptsV
     ptsVao->bind();
 
     QVector<VertexData> data;
-    for(size_t a = 0; a < points.size(); a++)
+    for(uint a = 0; a < points.size(); a++)
     {
         data.append(VertexData(QVector3D(points[a].x, points[a].y,  0), QVector2D(), vecCol));
     }
@@ -415,7 +441,7 @@ void GLWidget::PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo
     linesVao->bind();
 
     QVector<VertexData> data;
-    for(size_t a = 0; a < lines.size(); a++)
+    for(uint a = 0; a < lines.size(); a++)
     {
         data.append(VertexData(QVector3D(lines[a].XA, lines[a].YA,  0), QVector2D(), vecCol));
         data.append(VertexData(QVector3D(lines[a].XB, lines[a].YB,  0), QVector2D(), vecCol));

@@ -30,6 +30,10 @@ private:
     QOpenGLBuffer               _dotsVbo;
     QOpenGLVertexArrayObject    _dotsVao;
 
+    ALine _breakScribbleLine;
+    QOpenGLBuffer               _breakScribbleVbo;
+    QOpenGLVertexArrayObject    _breakScribbleVao;
+
     bool    _isMouseDown;
     float   _zoomFactor;
     QPoint  _scrollOffset;
