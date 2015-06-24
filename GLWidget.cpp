@@ -303,6 +303,11 @@ AnIndex GLWidget::GetIndex(AVector vec)
     return AnIndex(intpartx, intparty);
 }
 
+void GLWidget::TraceOneStep()
+{
+    std::cout << "Trace One Step\n";
+}
+
 void GLWidget::InitCells()
 {
     _cells.clear();

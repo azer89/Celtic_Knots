@@ -210,7 +210,7 @@ void GLContainer::SetScrolls()
             imgSize = QSize(100, 100);
         }
 
-        std::cout << "image size " << imgSize.width() << " - " << imgSize.height() << "\n";
+        //std::cout << "image size " << imgSize.width() << " - " << imgSize.height() << "\n";
         double zoomFactor = _glWidget->GetZoomFactor();
 
         if((double)this->width()  < (double)imgSize.width() * zoomFactor ||  (double)this->height() < (double)imgSize.height() *zoomFactor)

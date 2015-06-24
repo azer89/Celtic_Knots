@@ -106,6 +106,8 @@ public:
 
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
+    void TraceOneStep();
+
     // zoom in handle
     void ZoomIn();
     // zoom out handle
