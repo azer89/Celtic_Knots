@@ -136,10 +136,6 @@ void GLWidget::paintGL()
         glDrawArrays(GL_LINES, 0, _cellLines.size() * 2);
         _cellLinesVao.release();
     }
-
-
-
-    //PaintCurve();
 }
 
 // Mouse is pressed
@@ -153,9 +149,28 @@ void GLWidget::mousePressEvent(int x, int y)
     double dy = y + _scrollOffset.y();
     dy /= _zoomFactor;
 
-    _breakScribbleLine.XA = dx;
-    _breakScribbleLine.YA = dy;
 
+    // break markers
+    AnIndex idx = GetIndex(AVector(dx, dy));
+
+    if(_cells[idx.x][idx.y]._cellSign != CellSign::SIGN_EMPTY)
+    {
+        AVector gVec(idx.x * _gridSpacing, idx.y * _gridSpacing);
+
+        _breakScribbleLine.XA = gVec.x;
+        _breakScribbleLine.YA = gVec.y;
+        _breakScribbleLine.XB = gVec.x;
+        _breakScribbleLine.YB = gVec.y;
+
+        _startIndex.x = idx.x;
+        _startIndex.y = idx.y;
+        _endIndex.x = idx.x;
+        _endIndex.y = idx.y;
+
+        if(_breakScribbleVao.isCreated())
+            { _breakScribbleVao.destroy(); }
+    }
+    // update canvas
     this->repaint();
 }
 
@@ -168,19 +183,28 @@ void GLWidget::mouseMoveEvent(int x, int y)
     double dy = y + _scrollOffset.y();
     dy /= _zoomFactor;
 
+    // break markers
     if(_isMouseDown)
     {
-        _breakScribbleLine.XB = dx;
-        _breakScribbleLine.YB = dy;
+        AnIndex idx = GetIndex(AVector(dx, dy));
+        AVector gVec(idx.x * _gridSpacing, idx.y * _gridSpacing);
 
-        std::cout << _breakScribbleLine.XA << " - " << _breakScribbleLine.YA << " --- " <<
-                     _breakScribbleLine.XB << " - " << _breakScribbleLine.YB << "\n";
+        if( _cells[idx.x][idx.y]._cellSign != CellSign::SIGN_EMPTY && (_startIndex.x == idx.x || _startIndex.y == idx.y))
+        {
+            _breakScribbleLine.XB = gVec.x;
+            _breakScribbleLine.YB = gVec.y;
 
-        std::vector<ALine> linev;
-        linev.push_back(_breakScribbleLine);
-        PrepareLinesVAO(linev, &_breakScribbleVbo, &_breakScribbleVao, QVector3D(1.0, 0.0, 0.0));
+            _endIndex.x = idx.x;
+            _endIndex.y = idx.y;
+
+            std::vector<ALine> linev;
+            linev.push_back(_breakScribbleLine);
+            PrepareLinesVAO(linev, &_breakScribbleVbo, &_breakScribbleVao, QVector3D(0.0, 0.0, 0.0));
+        }
     }
 
+
+    // update canvas
     this->repaint();
 }
 
@@ -216,8 +240,20 @@ void GLWidget::mouseDoubleClick(int x, int y)
 
 void GLWidget::HorizontalScroll(int val) { _scrollOffset.setX(val); }
 void GLWidget::VerticalScroll(int val) { _scrollOffset.setY(val); }
-void GLWidget::ZoomIn() { this->_zoomFactor += 0.5f; }
-void GLWidget::ZoomOut() { this->_zoomFactor -= 0.5f; if(this->_zoomFactor < 0.1f) _zoomFactor = 0.1f; }
+void GLWidget::ZoomIn() { this->_zoomFactor += 0.05f; }
+void GLWidget::ZoomOut() { this->_zoomFactor -= 0.05f; if(this->_zoomFactor < 0.1f) _zoomFactor = 0.1f; }
+
+AnIndex GLWidget::GetIndex(AVector vec)
+{
+    float floatx = vec.x / _gridSpacing;
+    float floaty = vec.y / _gridSpacing;
+
+    double intpartx, intparty;
+    intpartx = round (floatx);
+    intparty = round (floaty);
+
+    return AnIndex(intpartx, intparty);
+}
 
 void GLWidget::InitCells()
 {

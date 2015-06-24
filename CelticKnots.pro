@@ -23,7 +23,8 @@ HEADERS  += mainwindow.h \
     AVector.h \
     VertexData.h \
     ALine.h \
-    CCell.h
+    CCell.h \
+    AnIndex.h
 
 FORMS    += mainwindow.ui
 

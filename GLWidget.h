@@ -11,6 +11,7 @@
 #include "AVector.h"
 #include "ALine.h"
 #include "CCell.h"
+#include "AnIndex.h"
 
 class GLWidget : public QGLWidget
 {
@@ -33,6 +34,9 @@ private:
     ALine _breakScribbleLine;
     QOpenGLBuffer               _breakScribbleVbo;
     QOpenGLVertexArrayObject    _breakScribbleVao;
+
+    AnIndex _startIndex;
+    AnIndex _endIndex;
 
     bool    _isMouseDown;
     float   _zoomFactor;
@@ -76,6 +80,8 @@ private:
 
     void PreparePointsVAO(std::vector<AVector> points, QOpenGLBuffer* ptsVbo, QOpenGLVertexArrayObject* ptsVao, QVector3D vecCol);
     void PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
+
+    AnIndex GetIndex(AVector vec);
 
 protected:
     // qt event

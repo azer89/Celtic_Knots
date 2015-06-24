@@ -21,7 +21,6 @@ public:
     {
         this->x = -1;
         this->y = -1;
-        this->index = -1;
     }
 
     // Constructor
@@ -29,7 +28,6 @@ public:
     {
         this->x = x;
         this->y = y;
-        this->index = -1;
     }
 
     // Scale a point
@@ -150,7 +148,6 @@ public:
     // cross product
     AVector Cross(AVector otherVector)
     {
-        //U x V = Ux*Vy-Uy*Vx
         return AVector(x * otherVector.y, y * otherVector.x);
     }
 
