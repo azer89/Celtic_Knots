@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 #include <math.h>
+#include <algorithm>
 
 #include <QGLFormat>
 #include <QSvgGenerator>
@@ -98,15 +99,7 @@ void GLWidget::paintGL()
     _shaderProgram->setUniformValue(_mvpMatrixLocation, orthoMatrix * transformMatrix);
 
 
-    if(_breakScribbleVao.isCreated() && _isMouseDown)
-    {
-        _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
 
-        glLineWidth(2.0f);
-        _breakScribbleVao.bind();
-        glDrawArrays(GL_LINES, 0, 2);
-        _breakScribbleVao.release();
-    }
 
     if(_dotsVao.isCreated())
     {
@@ -124,6 +117,26 @@ void GLWidget::paintGL()
             glDrawArrays(GL_TRIANGLE_FAN, a * verticesPerDot, verticesPerDot);
         }
         _dotsVao.release();
+    }
+
+    if(_breakScribbleVao.isCreated() && _isMouseDown)
+    {
+        _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
+
+        glLineWidth(2.0f);
+        _breakScribbleVao.bind();
+        glDrawArrays(GL_LINES, 0, 2);
+        _breakScribbleVao.release();
+    }
+
+    if(_breakLinesVao.isCreated())
+    {
+        _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
+
+        glLineWidth(2.0f);
+        _breakLinesVao.bind();
+        glDrawArrays(GL_LINES, 0, _breakLines.size() * 2);
+        _breakLinesVao.release();
     }
 
 
@@ -220,7 +233,42 @@ void GLWidget::mouseReleaseEvent(int x, int y)
     dy /= _zoomFactor;
 
     // your stuff
+    if(_breakScribbleVao.isCreated())
+    {
+        _breakLines.push_back(_breakScribbleLine);
+        PrepareLinesVAO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
 
+        // mark cells
+        int startx = std::min(_startIndex.x, _endIndex.x);
+        int endx = std::max(_startIndex.x, _endIndex.x);
+        int starty = std::min(_startIndex.y, _endIndex.y);
+        int endy = std::max(_startIndex.y, _endIndex.y);
+
+        for(size_t a = 0; a < _actualGridSize.width(); a++)
+        {
+            for(size_t b = 0; b < _actualGridSize.height(); b++)
+            {
+                if(a >= startx && a <= endx && b >= starty && b <= endy )
+                    { _cells[a][b]._cellBreakMarker = CellBreakMarker::BREAK_MARKER_BREAK; }
+            }
+        }
+
+        /*for(size_t b = 0; b < _actualGridSize.height(); b++)
+        {
+            for(size_t a = 0; a < _actualGridSize.width(); a++)
+            {
+
+                if(_cells[a][b]._cellBreakMarker == CellBreakMarker::BREAK_MARKER_BREAK)
+                    { std::cout << "x"; }
+                else
+                    { std::cout << " "; }
+            }
+            std::cout << "\n";
+        }*/
+    }
+
+
+     // update canvas
     this->repaint();
 }
 

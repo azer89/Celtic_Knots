@@ -31,9 +31,13 @@ private:
     QOpenGLBuffer               _dotsVbo;
     QOpenGLVertexArrayObject    _dotsVao;
 
-    ALine _breakScribbleLine;
+    ALine                       _breakScribbleLine;
     QOpenGLBuffer               _breakScribbleVbo;
     QOpenGLVertexArrayObject    _breakScribbleVao;
+    std::vector<ALine>          _breakLines;
+    QOpenGLBuffer               _breakLinesVbo;
+    QOpenGLVertexArrayObject    _breakLinesVao;
+
 
     AnIndex _startIndex;
     AnIndex _endIndex;
