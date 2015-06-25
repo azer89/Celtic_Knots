@@ -348,18 +348,18 @@ void GLWidget::TraceOneStep()
 
         _traceList.push_back(startIdx); // put in list
         _cells[startIdx.x][startIdx.y]._isVisited = true; // mark
-        //_cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
-        _cells[startIdx.x][startIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+        _cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
+        _cells[startIdx.x][startIdx.y]._directionType = DirectionType::DIR_UPRIGHT; // (0,0) always upright or downleft
 
         _tilePainter->SetTiles(_cells, _gridSpacing);
-
         this->repaint();
     }
     else
     {
-        DirectionType dirType = DirectionType::DIR_NONE;
-
         AnIndex curIdx = _traceList[_traceList.size() - 1];
+
+        std::cout << curIdx.x << ", " << curIdx.y << "\n";
+
         DirectionType curDir =_cells[curIdx.x][curIdx.y]._directionType;
 
         AnIndex urIdx(curIdx.x + 1, curIdx.y - 1);    // up right
@@ -367,94 +367,144 @@ void GLWidget::TraceOneStep()
         AnIndex dlIdx(curIdx.x - 1, curIdx.y + 1);    // down left
         AnIndex ulIdx(curIdx.x - 1, curIdx.y - 1);    // up left
 
-
         AnIndex rIdx(curIdx.x + 1, curIdx.y    );     // right
         AnIndex dIdx(curIdx.x    , curIdx.y + 1);     // down
         AnIndex lIdx(curIdx.x - 1, curIdx.y    );     // left
         AnIndex uIdx(curIdx.x    , curIdx.y - 1);     // up
 
-        /*
-        CellBreakMarker urM;
-        CellBreakMarker drM;
-        CellBreakMarker dlM;
-        CellBreakMarker ulM;
-        */
-
-        if(_traceList.size() == 1)  // start, can go anywhere
+        // if curdir up right   && !hitawall(r)
+        if(curDir == DirectionType::DIR_UPRIGHT && !DoesHitAWall(rIdx))
         {
-            if(!DoesHitAWall(rIdx))        // up right (r)    && no wall
-            {
-                // put in list
-                // mark the cell
-                // give direction
-            }
-            else if(!DoesHitAWall(drIdx))  // down right (dr) && no wall
-            {
-            }
-            else if(!DoesHitAWall(dIdx))   // down left (d)   && no wall
-            {
-            }
-            else if(!DoesHitAWall(curIdx)) // up left (c)     && no wall
-            {
-            }
+            std::cout << "1\n";
+            _traceList.push_back(urIdx);
+            _cells[drIdx.x][drIdx.y]._isVisited = true;
+            //_cells[][]._tileType = ;
+            _cells[urIdx.x][urIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+        }
+        // if curdir down right && !hitawall(dr)
+        else if(curDir == DirectionType::DIR_DOWNRIGHT && !DoesHitAWall(drIdx))
+        {
+            std::cout << "2\n";
+            _traceList.push_back(drIdx);
+            _cells[drIdx.x][drIdx.y]._isVisited = true;
+            //_cells[][]._tileType = ;
+            _cells[drIdx.x][drIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+        }
+        // if curdir down left  && !hitawall(d)
+        else if(curDir == DirectionType::DIR_DOWNLEFT && !DoesHitAWall(dIdx))
+        {
+            std::cout << "3\n";
+            _traceList.push_back(dlIdx);
+            _cells[dlIdx.x][dlIdx.y]._isVisited = true;
+            //_cells[][]._tileType = ;
+            _cells[dlIdx.x][dlIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+        }
+        // if curdir up left    && !hitawall(c)
+        else if(curDir == DirectionType::DIR_UPLEFT && !DoesHitAWall(curIdx))
+        {
+            std::cout << "4\n";
+            _traceList.push_back(ulIdx);
+            _cells[ulIdx.x][ulIdx.y]._isVisited = true;
+            //_cells[][]._tileType = ;
+            _cells[ulIdx.x][ulIdx.y]._directionType = DirectionType::DIR_UPLEFT;
+        }
 
-            /*else if(!DoesHitAWall(rIdx))   // right    && no wall
+        // if curdir up right   && hitawall(r)
+        else if(curDir == DirectionType::DIR_UPRIGHT && DoesHitAWall(rIdx))
+        {
+            // up left
+            if(curIdx.y > 0 && DoesHitAWall(urIdx))
             {
+                std::cout << "5\n";
+                _traceList.push_back(uIdx);
+                _cells[uIdx.x][uIdx.y]._isVisited = true;
+                //_cells[][]._tileType = ;
+                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
-            else if(!DoesHitAWall(dIdx))   // down     && no wall
-            {
-            }
-            else if(!DoesHitAWall(lIdx))   // left     && no wall
-            {
-            }
-            else if(!DoesHitAWall(uIdx))   // up       && no wall
-            {
-            }*/
+            // down right
             else
             {
-                std::cout << "Houston, we have a problem.";
+                std::cout << "6\n";
+                _traceList.push_back(rIdx);
+                _cells[rIdx.x][rIdx.y]._isVisited = true;
+                //_cells[][]._tileType = ;
+                _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
-
         }
-        else    // not start
+        // if curdir down right && hitawall(dr)
+        else if(curDir == DirectionType::DIR_DOWNRIGHT && DoesHitAWall(drIdx))
         {
-            AnIndex prevIdx = _traceList[_traceList.size() - 2];
-            CCell prevCell = _cells[prevIdx.x][prevIdx.y];
-            DirectionType prevDir = prevCell._directionType;
-
-            // if curdir up right   && !hitawall(r)  && up right never visited
-            // if curdir down right && !hitawall(dr) && down right never visited
-            // if curdir down left  && !hitawall(d)  && down left never visited
-            // if curdir up left    && !hitawall(c)  && up left never visited
-
-            // if curdir up right   && hitawall(r)  --> up left    (next cell ?)
-            // if curdir down right && hitawall(dr) --> down left  (next cell ?)
-            // if curdir down left  && hitawall(d)  --> down right (next cell ?)
-            // if curdir up left    && hitawall(c)  --> up right   (next cell ?)
-
-
-
-
-            // if corner && prev up right
-            // if corner && prev down right
-            // if corner && prev down left
-            // if corner && prev up left
-            // if corner && prev right      && right cell not visited
-            // if corner && prev down       && down cell not visited
-            // if corner && prev left       && left cell not visited
-            // if corner && prev up         &&
-
-            // if hit the wall && cur up right
-            // if hit the wall && cur down right
-            // if hit the wall && cur down left
-            // if hit the wall && cur up left
-            // if hit the wall && cur right
-            // if hit the wall && cur down
-            // if hit the wall && cur left
-            // if hit the wall && cur up
+            // down left
+            if(curIdx.y < _actualGridSize.height() - 2 && DoesHitAWall(AnIndex(drIdx.x, drIdx.y + 1)))
+            {
+                std::cout << "7\n";
+                _traceList.push_back(dIdx);
+                _cells[dIdx.x][dIdx.y]._isVisited = true;
+                //_cells[][]._tileType = ;
+                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+            }
+            // up right
+            else
+            {
+                std::cout << "8\n";
+                _traceList.push_back(rIdx);
+                _cells[rIdx.x][rIdx.y]._isVisited = true;
+                //_cells[rIdx.x][rIdx.y]._tileType = ;
+                _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+            }
+        }
+        // if curdir down left  && hitawall(d)
+        else if(curDir == DirectionType::DIR_DOWNLEFT && DoesHitAWall(dIdx))
+        {
+            // down right
+            if(curIdx.y < _actualGridSize.height() - 2 && DoesHitAWall(AnIndex(dIdx.x, dIdx.y + 1)))
+            {
+                std::cout << "9\n";
+                _traceList.push_back(dIdx);
+                _cells[dIdx.x][dIdx.y]._isVisited = true;
+                //_cells[dIdx.x][dIdx.y]._tileType = ;
+                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+            }
+            // up left
+            else
+            {
+                std::cout << "10\n";
+                _traceList.push_back(lIdx);
+                _cells[lIdx.x][lIdx.y]._isVisited = true;
+                //_cells[lIdx.x][lIdx.y]._tileType = ;
+                _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_UPLEFT;
+            }
+        }
+        // if curdir up left    && hitawall(c)
+        else if(curDir == DirectionType::DIR_UPLEFT && DoesHitAWall(curIdx))
+        {
+            // up right
+            if(curIdx.y > 0 && DoesHitAWall(uIdx))
+            {
+                std::cout << "11\n";
+                _traceList.push_back(uIdx);
+                _cells[uIdx.x][uIdx.y]._isVisited = true;
+                //_cells[uIdx.x][uIdx.y]._tileType = ;
+                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+            }
+            // down left
+            else
+            {
+                std::cout << "12\n";
+                _traceList.push_back(lIdx);
+                _cells[lIdx.x][lIdx.y]._isVisited = true;
+                //_cells[lIdx.x][lIdx.y]._tileType = ;
+                _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+            }
         }
 
+        // check if we revisit a cell which means done
+        AnIndex nextIdx = _traceList[_traceList.size() - 1];
+        if(_cells[nextIdx.x][nextIdx.y]._isVisited)
+        {
+        }
 
+        _tilePainter->SetTiles(_cells, _gridSpacing);
         this->repaint();
     }
 }
@@ -463,7 +513,7 @@ void GLWidget::InitCells()
 {
     _cells.clear();
     _gridSpacing = 10;
-    _gridSize = QSize(5, 5);
+    _gridSize = QSize(3, 3);
 
     // add one row and one column
     _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );

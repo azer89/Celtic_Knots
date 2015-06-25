@@ -23,10 +23,20 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, float gridSpac
 
 
     QSize gridSize(cells.size(), cells[0].size());
-    for(size_t a = 0; a < gridSize.width(); a++)
+    for(size_t b = 0; b < gridSize.height(); b++)
     {
-        for(size_t b = 0; b < gridSize.height(); b++)
+        for(size_t a = 0; a < gridSize.width(); a++)
         {
+            if(cells[a][b]._isVisited)
+            {
+                std::cout << ".";
+            }
+            else
+            {
+                std::cout << " ";
+            }
+
+            /*
             if(cells[a][b]._tileType == TileType::TILE_CORNER)
             {
                 CreateCorner(cells[a][b], AnIndex(a, b), gridSpacing);
@@ -35,6 +45,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, float gridSpac
             {
                 std::cout << ".";
             }
+            */
         }
         std::cout << "\n";
     }
