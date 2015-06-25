@@ -348,7 +348,8 @@ void GLWidget::TraceOneStep()
 
         _traceList.push_back(startIdx); // put in list
         _cells[startIdx.x][startIdx.y]._isVisited = true; // mark
-        _cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
+        //_cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
+        _cells[startIdx.x][startIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
 
         _tilePainter->SetTiles(_cells, _gridSpacing);
 
@@ -426,10 +427,12 @@ void GLWidget::TraceOneStep()
             // if curdir down left  && !hitawall(d)  && down left never visited
             // if curdir up left    && !hitawall(c)  && up left never visited
 
-            // if curdir up right
-            // if curdir down right
-            // if curdir down left
-            // if curdir up left
+            // if curdir up right   && hitawall(r)  --> up left    (next cell ?)
+            // if curdir down right && hitawall(dr) --> down left  (next cell ?)
+            // if curdir down left  && hitawall(d)  --> down right (next cell ?)
+            // if curdir up left    && hitawall(c)  --> up right   (next cell ?)
+
+
 
 
             // if corner && prev up right
