@@ -11,9 +11,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    //traceOneStepButton
+    connect(ui->traceOneStepButton,	 SIGNAL(clicked()), this, SLOT(TraceOneStep()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::TraceOneStep()
+{
+    ui->widget->GetGLWidget()->TraceOneStep();
 }

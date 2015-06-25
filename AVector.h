@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <cmath>
+#include <stdlib.h>
 
 struct AVector
 {

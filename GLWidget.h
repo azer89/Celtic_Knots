@@ -12,6 +12,7 @@
 #include "ALine.h"
 #include "CCell.h"
 #include "AnIndex.h"
+#include "TilePainter.h"
 
 class GLWidget : public QGLWidget
 {
@@ -31,16 +32,23 @@ private:
     QOpenGLBuffer               _dotsVbo;
     QOpenGLVertexArrayObject    _dotsVao;
 
-    ALine                       _breakScribbleLine;
-    QOpenGLBuffer               _breakScribbleVbo;
-    QOpenGLVertexArrayObject    _breakScribbleVao;
+    // draw cells
+    TilePainter* _tilePainter;
+
+
+    // draw
+    AnIndex                     _drawStartIndex;
+    AnIndex                     _drawEndIndex;
+    ALine                       _drawBreakLine;
+    QOpenGLBuffer               _drawBreakVbo;
+    QOpenGLVertexArrayObject    _drawBreakVao;
+
     std::vector<ALine>          _breakLines;
     QOpenGLBuffer               _breakLinesVbo;
     QOpenGLVertexArrayObject    _breakLinesVao;
 
-
-    AnIndex _startIndex;
-    AnIndex _endIndex;
+    // trace cells
+    std::vector<AnIndex>        _traceList;
 
     bool    _isMouseDown;
     float   _zoomFactor;
@@ -86,6 +94,8 @@ private:
     void PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
 
     AnIndex GetIndex(AVector vec);
+    bool DoesHitAWall(AnIndex idx);
+    bool IsACorner(AnIndex idx);
 
 protected:
     // qt event
@@ -107,6 +117,7 @@ public:
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
     void TraceOneStep();
+
 
     // zoom in handle
     void ZoomIn();

@@ -18,6 +18,7 @@ GLWidget::GLWidget(QGLFormat format, QWidget *parent) :
     _shaderProgram(0),
     _img_width(50),
     _img_height(50),
+    _tilePainter(0),
     _shouldUpdateScrolls(false)
 {
 }
@@ -25,6 +26,7 @@ GLWidget::GLWidget(QGLFormat format, QWidget *parent) :
 GLWidget::~GLWidget()
 {
     if(_shaderProgram) delete _shaderProgram;
+    if(_tilePainter) delete _tilePainter;
 }
 
 void GLWidget::initializeGL()
@@ -60,6 +62,8 @@ void GLWidget::initializeGL()
 
     InitCells();
     InitDots();
+
+    _tilePainter = new TilePainter();
 }
 
 bool GLWidget::event( QEvent * event )
@@ -119,14 +123,14 @@ void GLWidget::paintGL()
         _dotsVao.release();
     }
 
-    if(_breakScribbleVao.isCreated() && _isMouseDown)
+    if(_drawBreakVao.isCreated() && _isMouseDown)
     {
         _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
 
         glLineWidth(2.0f);
-        _breakScribbleVao.bind();
+        _drawBreakVao.bind();
         glDrawArrays(GL_LINES, 0, 2);
-        _breakScribbleVao.release();
+        _drawBreakVao.release();
     }
 
     if(_breakLinesVao.isCreated())
@@ -170,18 +174,18 @@ void GLWidget::mousePressEvent(int x, int y)
     {
         AVector gVec(idx.x * _gridSpacing, idx.y * _gridSpacing);
 
-        _breakScribbleLine.XA = gVec.x;
-        _breakScribbleLine.YA = gVec.y;
-        _breakScribbleLine.XB = gVec.x;
-        _breakScribbleLine.YB = gVec.y;
+        _drawBreakLine.XA = gVec.x;
+        _drawBreakLine.YA = gVec.y;
+        _drawBreakLine.XB = gVec.x;
+        _drawBreakLine.YB = gVec.y;
 
-        _startIndex.x = idx.x;
-        _startIndex.y = idx.y;
-        _endIndex.x = idx.x;
-        _endIndex.y = idx.y;
+        _drawStartIndex.x = idx.x;
+        _drawStartIndex.y = idx.y;
+        _drawEndIndex.x = idx.x;
+        _drawEndIndex.y = idx.y;
 
-        if(_breakScribbleVao.isCreated())
-            { _breakScribbleVao.destroy(); }
+        if(_drawBreakVao.isCreated())
+            { _drawBreakVao.destroy(); }
     }
     // update canvas
     this->repaint();
@@ -202,17 +206,17 @@ void GLWidget::mouseMoveEvent(int x, int y)
         AnIndex idx = GetIndex(AVector(dx, dy));
         AVector gVec(idx.x * _gridSpacing, idx.y * _gridSpacing);
 
-        if( _cells[idx.x][idx.y]._cellSign != CellSign::SIGN_EMPTY && (_startIndex.x == idx.x || _startIndex.y == idx.y))
+        if( _cells[idx.x][idx.y]._cellSign != CellSign::SIGN_EMPTY && (_drawStartIndex.x == idx.x || _drawStartIndex.y == idx.y))
         {
-            _breakScribbleLine.XB = gVec.x;
-            _breakScribbleLine.YB = gVec.y;
+            _drawBreakLine.XB = gVec.x;
+            _drawBreakLine.YB = gVec.y;
 
-            _endIndex.x = idx.x;
-            _endIndex.y = idx.y;
+            _drawEndIndex.x = idx.x;
+            _drawEndIndex.y = idx.y;
 
             std::vector<ALine> linev;
-            linev.push_back(_breakScribbleLine);
-            PrepareLinesVAO(linev, &_breakScribbleVbo, &_breakScribbleVao, QVector3D(0.0, 0.0, 0.0));
+            linev.push_back(_drawBreakLine);
+            PrepareLinesVAO(linev, &_drawBreakVbo, &_drawBreakVao, QVector3D(0.0, 0.0, 0.0));
         }
     }
 
@@ -233,16 +237,16 @@ void GLWidget::mouseReleaseEvent(int x, int y)
     dy /= _zoomFactor;
 
     // your stuff
-    if(_breakScribbleVao.isCreated())
+    if(_drawBreakVao.isCreated())
     {
-        _breakLines.push_back(_breakScribbleLine);
+        _breakLines.push_back(_drawBreakLine);
         PrepareLinesVAO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
 
         // mark cells
-        int startx = std::min(_startIndex.x, _endIndex.x);
-        int endx = std::max(_startIndex.x, _endIndex.x);
-        int starty = std::min(_startIndex.y, _endIndex.y);
-        int endy = std::max(_startIndex.y, _endIndex.y);
+        int startx = std::min(_drawStartIndex.x, _drawEndIndex.x);
+        int endx = std::max(_drawStartIndex.x, _drawEndIndex.x);
+        int starty = std::min(_drawStartIndex.y, _drawEndIndex.y);
+        int endy = std::max(_drawStartIndex.y, _drawEndIndex.y);
 
         for(size_t a = 0; a < _actualGridSize.width(); a++)
         {
@@ -253,7 +257,7 @@ void GLWidget::mouseReleaseEvent(int x, int y)
             }
         }
 
-        /*for(size_t b = 0; b < _actualGridSize.height(); b++)
+        for(size_t b = 0; b < _actualGridSize.height(); b++)
         {
             for(size_t a = 0; a < _actualGridSize.width(); a++)
             {
@@ -264,7 +268,7 @@ void GLWidget::mouseReleaseEvent(int x, int y)
                     { std::cout << " "; }
             }
             std::cout << "\n";
-        }*/
+        }
     }
 
 
@@ -303,16 +307,160 @@ AnIndex GLWidget::GetIndex(AVector vec)
     return AnIndex(intpartx, intparty);
 }
 
+bool GLWidget::DoesHitAWall(AnIndex idx)
+{
+    CCell aCell = _cells[idx.x][idx.y];
+    QSize gridDim(_actualGridSize.width() -1, _actualGridSize.height() -1);
+    if(idx.x < 0 || idx.x >= gridDim.width() || idx.y < 0 || idx.y >= gridDim.height())
+    {
+        return true;
+    }
+    else if(aCell._cellBreakMarker == CellBreakMarker::BREAK_MARKER_BREAK)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool GLWidget::IsACorner(AnIndex idx)
+{
+    AnIndex drIdx(idx.x + 1, idx.y + 1);    // down right
+    AnIndex rIdx( idx.x + 1, idx.y    );     // right
+    AnIndex dIdx( idx.x    , idx.y + 1);     // down
+
+    if(DoesHitAWall(idx) && DoesHitAWall(rIdx) && DoesHitAWall(drIdx))   // up right
+        { return true; }
+    else if(DoesHitAWall(rIdx) && DoesHitAWall(drIdx) && DoesHitAWall(dIdx))  // downright
+        { return true; }
+    else if(DoesHitAWall(idx) && DoesHitAWall(dIdx) && DoesHitAWall(drIdx))  // down left
+        { return true; }
+    else if(DoesHitAWall(dIdx) && DoesHitAWall(idx) && DoesHitAWall(rIdx))  // up left
+        { return true; }
+    return false;
+}
+
 void GLWidget::TraceOneStep()
 {
-    std::cout << "Trace One Step\n";
+    //std::cout << "Trace One Step\n";
+    if(_traceList.size() == 0)
+    {
+        AnIndex startIdx(0, 0);
+
+        _traceList.push_back(startIdx); // put in list
+        _cells[startIdx.x][startIdx.y]._isVisited = true; // mark
+        _cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
+
+        _tilePainter->SetTiles(_cells, _gridSpacing);
+
+        this->repaint();
+    }
+    else
+    {
+        DirectionType dirType = DirectionType::DIR_NONE;
+
+        AnIndex curIdx = _traceList[_traceList.size() - 1];
+        DirectionType curDir =_cells[curIdx.x][curIdx.y]._directionType;
+
+        AnIndex urIdx(curIdx.x + 1, curIdx.y - 1);    // up right
+        AnIndex drIdx(curIdx.x + 1, curIdx.y + 1);    // down right
+        AnIndex dlIdx(curIdx.x - 1, curIdx.y + 1);    // down left
+        AnIndex ulIdx(curIdx.x - 1, curIdx.y - 1);    // up left
+
+
+        AnIndex rIdx(curIdx.x + 1, curIdx.y    );     // right
+        AnIndex dIdx(curIdx.x    , curIdx.y + 1);     // down
+        AnIndex lIdx(curIdx.x - 1, curIdx.y    );     // left
+        AnIndex uIdx(curIdx.x    , curIdx.y - 1);     // up
+
+        /*
+        CellBreakMarker urM;
+        CellBreakMarker drM;
+        CellBreakMarker dlM;
+        CellBreakMarker ulM;
+        */
+
+        if(_traceList.size() == 1)  // start, can go anywhere
+        {
+            if(!DoesHitAWall(rIdx))        // up right (r)    && no wall
+            {
+                // put in list
+                // mark the cell
+                // give direction
+            }
+            else if(!DoesHitAWall(drIdx))  // down right (dr) && no wall
+            {
+            }
+            else if(!DoesHitAWall(dIdx))   // down left (d)   && no wall
+            {
+            }
+            else if(!DoesHitAWall(curIdx)) // up left (c)     && no wall
+            {
+            }
+
+            /*else if(!DoesHitAWall(rIdx))   // right    && no wall
+            {
+            }
+            else if(!DoesHitAWall(dIdx))   // down     && no wall
+            {
+            }
+            else if(!DoesHitAWall(lIdx))   // left     && no wall
+            {
+            }
+            else if(!DoesHitAWall(uIdx))   // up       && no wall
+            {
+            }*/
+            else
+            {
+                std::cout << "Houston, we have a problem.";
+            }
+
+        }
+        else    // not start
+        {
+            AnIndex prevIdx = _traceList[_traceList.size() - 2];
+            CCell prevCell = _cells[prevIdx.x][prevIdx.y];
+            DirectionType prevDir = prevCell._directionType;
+
+            // if curdir up right   && !hitawall(r)  && up right never visited
+            // if curdir down right && !hitawall(dr) && down right never visited
+            // if curdir down left  && !hitawall(d)  && down left never visited
+            // if curdir up left    && !hitawall(c)  && up left never visited
+
+            // if curdir up right
+            // if curdir down right
+            // if curdir down left
+            // if curdir up left
+
+
+            // if corner && prev up right
+            // if corner && prev down right
+            // if corner && prev down left
+            // if corner && prev up left
+            // if corner && prev right      && right cell not visited
+            // if corner && prev down       && down cell not visited
+            // if corner && prev left       && left cell not visited
+            // if corner && prev up         &&
+
+            // if hit the wall && cur up right
+            // if hit the wall && cur down right
+            // if hit the wall && cur down left
+            // if hit the wall && cur up left
+            // if hit the wall && cur right
+            // if hit the wall && cur down
+            // if hit the wall && cur left
+            // if hit the wall && cur up
+        }
+
+
+        this->repaint();
+    }
 }
 
 void GLWidget::InitCells()
 {
     _cells.clear();
     _gridSpacing = 10;
-    _gridSize = QSize(10, 5);
+    _gridSize = QSize(5, 5);
 
     // add one row and one column
     _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );
@@ -341,6 +489,18 @@ void GLWidget::InitCells()
         for(size_t b = 1; b < _actualGridSize.height(); b += 2)
         {
             _cells[a][b]._cellSign = CellSign::SIGN_TWO;
+        }
+    }
+
+    // BOUNDARY
+    for(size_t a = 0; a < _actualGridSize.width(); a++)
+    {
+        for(size_t b = 0; b < _actualGridSize.height(); b++)
+        {
+            if(a == 0 || a == _actualGridSize.width() - 1 || b == 0 || b == _actualGridSize.height() - 1)
+            {
+                _cells[a][b]._cellBreakMarker = CellBreakMarker::BREAK_MARKER_BREAK;
+            }
         }
     }
 

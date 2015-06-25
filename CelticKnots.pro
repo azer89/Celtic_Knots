@@ -15,7 +15,8 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     GLContainer.cpp \
-    GLWidget.cpp
+    GLWidget.cpp \
+    TilePainter.cpp
 
 HEADERS  += mainwindow.h \
     GLContainer.h \
@@ -24,7 +25,10 @@ HEADERS  += mainwindow.h \
     VertexData.h \
     ALine.h \
     CCell.h \
-    AnIndex.h
+    AnIndex.h \
+    TileType.h \
+    DirectionType.h \
+    TilePainter.h
 
 FORMS    += mainwindow.ui
 
