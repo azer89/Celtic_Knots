@@ -63,7 +63,12 @@ void GLWidget::initializeGL()
     InitCells();
     InitDots();
 
+    // a bad thing
     _tilePainter = new TilePainter();
+    _tilePainter->_shaderProgram = _shaderProgram;
+    _tilePainter->_colorLocation = _colorLocation;
+    _tilePainter->_vertexLocation = _vertexLocation;
+    _tilePainter->_use_color_location = _use_color_location;
 }
 
 bool GLWidget::event( QEvent * event )
@@ -102,8 +107,7 @@ void GLWidget::paintGL()
 
     _shaderProgram->setUniformValue(_mvpMatrixLocation, orthoMatrix * transformMatrix);
 
-
-
+    _tilePainter->DrawTiles();
 
     if(_dotsVao.isCreated())
     {
@@ -339,11 +343,15 @@ bool GLWidget::IsACorner(AnIndex idx)
     return false;
 }
 
+// todo
+// should be done with line intersection
 void GLWidget::TraceOneStep()
 {
     //std::cout << "Trace One Step\n";
     if(_traceList.size() == 0)
     {
+        _isTracingDone = false;
+
         AnIndex startIdx(0, 0);
 
         _traceList.push_back(startIdx); // put in list
@@ -351,14 +359,15 @@ void GLWidget::TraceOneStep()
         _cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
         _cells[startIdx.x][startIdx.y]._directionType = DirectionType::DIR_UPRIGHT; // (0,0) always upright or downleft
 
-        _tilePainter->SetTiles(_cells, _gridSpacing);
+        _tilePainter->SetTiles(_cells, _traceList, _gridSpacing, _isTracingDone);
         this->repaint();
     }
-    else
+    else if(!_isTracingDone)
     {
         AnIndex curIdx = _traceList[_traceList.size() - 1];
+        _cells[curIdx.x][curIdx.y]._isVisited = true;
 
-        std::cout << curIdx.x << ", " << curIdx.y << "\n";
+        //std::cout << curIdx.x << ", " << curIdx.y << "\n";
 
         DirectionType curDir =_cells[curIdx.x][curIdx.y]._directionType;
 
@@ -375,36 +384,36 @@ void GLWidget::TraceOneStep()
         // if curdir up right   && !hitawall(r)
         if(curDir == DirectionType::DIR_UPRIGHT && !DoesHitAWall(rIdx))
         {
-            std::cout << "1\n";
+            //std::cout << "1\n";
             _traceList.push_back(urIdx);
-            _cells[drIdx.x][drIdx.y]._isVisited = true;
+            //_cells[drIdx.x][drIdx.y]._isVisited = true;
             //_cells[][]._tileType = ;
             _cells[urIdx.x][urIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
         }
         // if curdir down right && !hitawall(dr)
         else if(curDir == DirectionType::DIR_DOWNRIGHT && !DoesHitAWall(drIdx))
         {
-            std::cout << "2\n";
+            //std::cout << "2\n";
             _traceList.push_back(drIdx);
-            _cells[drIdx.x][drIdx.y]._isVisited = true;
+            //_cells[drIdx.x][drIdx.y]._isVisited = true;
             //_cells[][]._tileType = ;
             _cells[drIdx.x][drIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
         }
         // if curdir down left  && !hitawall(d)
         else if(curDir == DirectionType::DIR_DOWNLEFT && !DoesHitAWall(dIdx))
         {
-            std::cout << "3\n";
+            //std::cout << "3\n";
             _traceList.push_back(dlIdx);
-            _cells[dlIdx.x][dlIdx.y]._isVisited = true;
+            //_cells[dlIdx.x][dlIdx.y]._isVisited = true;
             //_cells[][]._tileType = ;
             _cells[dlIdx.x][dlIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
         }
         // if curdir up left    && !hitawall(c)
         else if(curDir == DirectionType::DIR_UPLEFT && !DoesHitAWall(curIdx))
         {
-            std::cout << "4\n";
+            //std::cout << "4\n";
             _traceList.push_back(ulIdx);
-            _cells[ulIdx.x][ulIdx.y]._isVisited = true;
+            //_cells[ulIdx.x][ulIdx.y]._isVisited = true;
             //_cells[][]._tileType = ;
             _cells[ulIdx.x][ulIdx.y]._directionType = DirectionType::DIR_UPLEFT;
         }
@@ -415,18 +424,18 @@ void GLWidget::TraceOneStep()
             // up left
             if(curIdx.y > 0 && DoesHitAWall(urIdx))
             {
-                std::cout << "5\n";
+                //std::cout << "5\n";
                 _traceList.push_back(uIdx);
-                _cells[uIdx.x][uIdx.y]._isVisited = true;
+                //_cells[uIdx.x][uIdx.y]._isVisited = true;
                 //_cells[][]._tileType = ;
                 _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
             // down right
             else
             {
-                std::cout << "6\n";
+                //std::cout << "6\n";
                 _traceList.push_back(rIdx);
-                _cells[rIdx.x][rIdx.y]._isVisited = true;
+                //_cells[rIdx.x][rIdx.y]._isVisited = true;
                 //_cells[][]._tileType = ;
                 _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
@@ -437,18 +446,18 @@ void GLWidget::TraceOneStep()
             // down left
             if(curIdx.y < _actualGridSize.height() - 2 && DoesHitAWall(AnIndex(drIdx.x, drIdx.y + 1)))
             {
-                std::cout << "7\n";
+                //std::cout << "7\n";
                 _traceList.push_back(dIdx);
-                _cells[dIdx.x][dIdx.y]._isVisited = true;
+                //_cells[dIdx.x][dIdx.y]._isVisited = true;
                 //_cells[][]._tileType = ;
                 _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
             }
             // up right
             else
             {
-                std::cout << "8\n";
+                //std::cout << "8\n";
                 _traceList.push_back(rIdx);
-                _cells[rIdx.x][rIdx.y]._isVisited = true;
+                //_cells[rIdx.x][rIdx.y]._isVisited = true;
                 //_cells[rIdx.x][rIdx.y]._tileType = ;
                 _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
             }
@@ -459,18 +468,18 @@ void GLWidget::TraceOneStep()
             // down right
             if(curIdx.y < _actualGridSize.height() - 2 && DoesHitAWall(AnIndex(dIdx.x, dIdx.y + 1)))
             {
-                std::cout << "9\n";
+                //std::cout << "9\n";
                 _traceList.push_back(dIdx);
-                _cells[dIdx.x][dIdx.y]._isVisited = true;
+                //_cells[dIdx.x][dIdx.y]._isVisited = true;
                 //_cells[dIdx.x][dIdx.y]._tileType = ;
                 _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
             // up left
             else
             {
-                std::cout << "10\n";
+                //std::cout << "10\n";
                 _traceList.push_back(lIdx);
-                _cells[lIdx.x][lIdx.y]._isVisited = true;
+                //_cells[lIdx.x][lIdx.y]._isVisited = true;
                 //_cells[lIdx.x][lIdx.y]._tileType = ;
                 _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
@@ -479,20 +488,20 @@ void GLWidget::TraceOneStep()
         else if(curDir == DirectionType::DIR_UPLEFT && DoesHitAWall(curIdx))
         {
             // up right
-            if(curIdx.y > 0 && DoesHitAWall(uIdx))
+            if(curIdx.y > 0 && DoesHitAWall(uIdx) && DoesHitAWall(dIdx))
             {
-                std::cout << "11\n";
+                //std::cout << "11\n";
                 _traceList.push_back(uIdx);
-                _cells[uIdx.x][uIdx.y]._isVisited = true;
+                //_cells[uIdx.x][uIdx.y]._isVisited = true;
                 //_cells[uIdx.x][uIdx.y]._tileType = ;
                 _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
             }
             // down left
             else
             {
-                std::cout << "12\n";
+                //std::cout << "12\n";
                 _traceList.push_back(lIdx);
-                _cells[lIdx.x][lIdx.y]._isVisited = true;
+                //_cells[lIdx.x][lIdx.y]._isVisited = true;
                 //_cells[lIdx.x][lIdx.y]._tileType = ;
                 _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
             }
@@ -502,9 +511,10 @@ void GLWidget::TraceOneStep()
         AnIndex nextIdx = _traceList[_traceList.size() - 1];
         if(_cells[nextIdx.x][nextIdx.y]._isVisited)
         {
+            _isTracingDone = true;
         }
 
-        _tilePainter->SetTiles(_cells, _gridSpacing);
+        _tilePainter->SetTiles(_cells, _traceList, _gridSpacing, _isTracingDone);
         this->repaint();
     }
 }
@@ -513,7 +523,7 @@ void GLWidget::InitCells()
 {
     _cells.clear();
     _gridSpacing = 10;
-    _gridSize = QSize(3, 3);
+    _gridSize = QSize(4, 4);
 
     // add one row and one column
     _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );

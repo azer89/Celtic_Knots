@@ -92,7 +92,7 @@ public:
     //	 1 : same direction
     //  -1 : opposite direction
     //   0 : other else
-    int HasSameDirection(ALine otherLine)
+    int HasSameDirection1(ALine otherLine)
     {
         float mag1 = Magnitude();
         float mag2 = otherLine.Magnitude();
@@ -111,6 +111,41 @@ public:
         if(subsValue > -std::numeric_limits<float>::epsilon() && subsValue < std::numeric_limits<float>::epsilon() ) { return 1; }
 
         return 0;
+    }
+
+    float ParallelCheck(ALine otherLine)
+    {
+        float dx1 = this->XB - this->XA;
+        float dy1 = this->YB - this->YA;
+        float dx2 = otherLine.XB - otherLine.XA;
+        float dy2 = otherLine.YB - otherLine.YA;
+        float cosAngle = std::abs((dx1 * dx2 + dy1 * dy2) / sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2)));
+
+        return cosAngle;
+
+        /*
+        float mag1 = Magnitude();
+        float mag2 = otherLine.Magnitude();
+
+        AVector dir1 = Direction();
+        AVector dir2 = otherLine.Direction();
+
+        float a_dot_b = dir1.Dot(dir2);
+        float a_b_mag = mag1 *  mag2;
+
+        return abs(a_dot_b - a_b_mag);
+        */
+
+        /*-
+        float addValue = a_dot_b + a_b_mag;
+        if(addValue > -std::numeric_limits<float>::epsilon() && addValue < std::numeric_limits<float>::epsilon() ) { return -1; }
+
+        float subsValue = a_dot_b - a_b_mag;
+
+        if(subsValue > -std::numeric_limits<float>::epsilon() && subsValue < std::numeric_limits<float>::epsilon() ) { return 1; }
+
+        return 0;
+        */
     }
 };
 

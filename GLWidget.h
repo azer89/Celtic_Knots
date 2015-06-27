@@ -49,6 +49,7 @@ private:
 
     // trace cells
     std::vector<AnIndex>        _traceList;
+    bool _isTracingDone;
 
     bool    _isMouseDown;
     float   _zoomFactor;
@@ -117,7 +118,6 @@ public:
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
     void TraceOneStep();
-
 
     // zoom in handle
     void ZoomIn();
