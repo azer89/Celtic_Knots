@@ -31,7 +31,8 @@ HEADERS  += mainwindow.h \
     DirectionType.h \
     TilePainter.h \
     CurveInterpolation.h \
-    LayerType.h
+    LayerType.h \
+    RibbonSegment.h
 
 FORMS    += mainwindow.ui
 

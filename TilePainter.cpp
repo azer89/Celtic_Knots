@@ -2,7 +2,6 @@
 #include "TilePainter.h"
 #include "VertexData.h"
 #include "CurveInterpolation.h"
-#include "LayerType.h"
 
 #include <stdlib.h>
 #include <iostream>
@@ -103,7 +102,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
 {
     _cLines.clear();
     std::vector<std::pair<LayerType, LayerType>> layerTypeList1;
-    std::vector<std::pair<LayerType, LayerType>> layerTypeList2;
+    std::vector<LayerType> layerTypeList2;
     std::vector<CornerCase> ccs;
 
     // because first and last are the same
@@ -265,26 +264,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         }
     }
 
-
-
-    // divide lines
-    /*
-    std::vector<ALine> tempLines2;
-    for(size_t a = 0; a < _cLines.size(); a++)
-    {
-        ALine ln = _cLines[a];
-        AVector sPt = ln.GetPointA();
-        AVector ePt = ln.GetPointB();
-        AVector mPt = sPt + (ePt - sPt) * 0.5;
-        tempLines2.push_back(ALine(sPt, mPt));
-        tempLines2.push_back(ALine(mPt, ePt));
-    }
-    _cLines = std::vector<ALine>(tempLines2);
-    */
-
-
     // bezier curves
-    std::vector<LayerType> plTypeList;
     if(isTracingDone)
     {
         _points.clear();
@@ -321,9 +301,9 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
             CurveInterpolation::DeCasteljau(segmentPoints, pt2, anchor1, anchor2, pt3, 1.0f);
 
             for(size_t a = 0; a < segmentPoints.size() / 2; a++)
-                { plTypeList.push_back(lTypes.first); }
+                { layerTypeList2.push_back(lTypes.first); }
             for(size_t a = segmentPoints.size() / 2; a < segmentPoints.size(); a++)
-                { plTypeList.push_back(lTypes.second); }
+                { layerTypeList2.push_back(lTypes.second); }
 
             _points.insert(_points.end(), segmentPoints.begin(), segmentPoints.end());
         }
@@ -339,12 +319,21 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         }
     }
 
-    // move first to the end
-    // std::vector<std::pair<LayerType, LayerType>>
-    layerTypeList2 =
 
 
-    PrepareLinesVAO(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
+    //PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
+    if(isTracingDone)
+    {
+        // move first to the end
+        std::rotate(layerTypeList2.begin(), layerTypeList2.begin() + 1, layerTypeList2.end());
+        PrepareLinesVAO2(_cLines, &_cLinesVbo, &_cLinesVao, layerTypeList2);
+    }
+    else
+    {
+        PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
+    }
+
+
 
     // left and right
     _rLines.clear();
@@ -373,11 +362,22 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         _rLines.push_back(ALine(d0Right, d1Right));
     }
 
-    PrepareLinesVAO(_lLines, &_lLinesVbo, &_lLinesVao, QVector3D(1.0, 0.0, 0.0));
-    PrepareLinesVAO(_rLines, &_rLinesVbo, &_rLinesVao, QVector3D(1.0, 0.0, 0.0));
+    //PrepareLinesVAO1(_lLines, &_lLinesVbo, &_lLinesVao, QVector3D(1.0, 0.0, 0.0));
+    //PrepareLinesVAO1(_rLines, &_rLinesVbo, &_rLinesVao, QVector3D(1.0, 0.0, 0.0));
+
+    if(isTracingDone)
+    {
+        PrepareLinesVAO2(_lLines, &_lLinesVbo, &_lLinesVao, layerTypeList2);
+        PrepareLinesVAO2(_rLines, &_rLinesVbo, &_rLinesVao, layerTypeList2);
+    }
+    else
+    {
+        PrepareLinesVAO1(_lLines, &_lLinesVbo, &_lLinesVao, QVector3D(1.0, 0.0, 0.0));
+        PrepareLinesVAO1(_rLines, &_rLinesVbo, &_rLinesVao, QVector3D(1.0, 0.0, 0.0));
+    }
 }
 
-void TilePainter::PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)
+void TilePainter::PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)
 {
     if(linesVao->isCreated())
     {
@@ -390,6 +390,44 @@ void TilePainter::PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* lines
     QVector<VertexData> data;
     for(uint a = 0; a < lines.size(); a++)
     {
+        data.append(VertexData(QVector3D(lines[a].XA, lines[a].YA,  0), QVector2D(), vecCol));
+        data.append(VertexData(QVector3D(lines[a].XB, lines[a].YB,  0), QVector2D(), vecCol));
+    }
+
+    linesVbo->create();
+    linesVbo->bind();
+    linesVbo->allocate(data.data(), data.size() * sizeof(VertexData));
+
+    quintptr offset = 0;
+
+    _shaderProgram->enableAttributeArray(_vertexLocation);
+    _shaderProgram->setAttributeBuffer(_vertexLocation, GL_FLOAT, 0, 3, sizeof(VertexData));
+
+    offset += sizeof(QVector3D);
+    offset += sizeof(QVector2D);
+
+    _shaderProgram->enableAttributeArray(_colorLocation);
+    _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+    linesVao->release();
+}
+
+void TilePainter::PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, std::vector<LayerType> layerTypeList)
+{
+    if(linesVao->isCreated())
+    {
+        linesVao->destroy();
+    }
+
+    linesVao->create();
+    linesVao->bind();
+
+    QVector<VertexData> data;
+    for(uint a = 0; a < lines.size(); a++)
+    {
+        QVector3D vecCol(1, 0, 0);
+        if(layerTypeList[a] == LayerType::LAYER_UNDER) {vecCol = QVector3D(0, 0, 1); }
+
         data.append(VertexData(QVector3D(lines[a].XA, lines[a].YA,  0), QVector2D(), vecCol));
         data.append(VertexData(QVector3D(lines[a].XB, lines[a].YB,  0), QVector2D(), vecCol));
     }
