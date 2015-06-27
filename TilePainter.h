@@ -38,8 +38,10 @@ public:
 
 private:
 
+    bool IsEven(int num);
     AVector GetMiddlePoint(AVector a, AVector b, AVector c);
     CornerCase GetCornerCase(int i, std::vector<std::vector<CCell>> cells, std::vector<AnIndex> traceList, bool isTracingDone);
+
     void PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
 
     double AngleInBetween(AVector vec1, AVector vec2);
@@ -63,6 +65,10 @@ private:
     QOpenGLBuffer               _lLinesVbo;
     QOpenGLVertexArrayObject    _lLinesVao;
     std::vector<ALine>          _lLines;
+
+    QOpenGLBuffer               _debugPointsVbo;
+    QOpenGLVertexArrayObject    _debugPointsVao;
+    std::vector<AVector>        _debugPoints;
 
     std::vector<AVector>        _points;
 
