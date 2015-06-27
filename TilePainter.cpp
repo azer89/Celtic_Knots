@@ -200,15 +200,15 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         }
     }
 
-    // resample
-    //AVector newPt = pt1 + (pt2 - pt1) * f;
+    // here
+    // check over under
 
     if(isTracingDone)
     {
         _points.clear();
         for(size_t a = 0; a < _cLines.size(); a++)
         {
-            //_points.push_back(AVector(_lines[a].XA, _lines[a].YA));
+            /*
             int ln1Idx = a;
             int ln2Idx = (a + 1) % _cLines.size();
             int ln3Idx = (a + 2) % _cLines.size();
@@ -217,10 +217,23 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
             AVector pt2 = _cLines[ln2Idx].GetPointA();
             AVector pt3 = _cLines[ln3Idx].GetPointA();
             AVector pt4 = _cLines[ln3Idx].GetPointB();
+            */
+
+            int curIdx = a;
+            int prevIdx = a - 1;
+            int nextIdx = a + 1;
+
+            if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
+            else if(curIdx == _cLines.size() - 1) { nextIdx = 0; }
+
+            AVector pt1 = _cLines[prevIdx].GetPointA();
+            AVector pt2 = _cLines[curIdx].GetPointA();
+            AVector pt3 = _cLines[curIdx].GetPointB();
+            AVector pt4 = _cLines[nextIdx].GetPointB();
 
             AVector anchor1;
             AVector anchor2;
-            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.95);
+            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
 
 
             float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
@@ -245,11 +258,14 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         _cLines.clear();
         for(size_t a = 0; a < _points.size(); a++)
         {
+            //int idx1 = a;
+            //int idx2 = (a + 1) % _points.size();
             int idx1 = a;
-            int idx2 = (a + 1) % _points.size();
+            int idx2 = a + 1;
+            if(idx1 == _points.size() - 1) { idx2 = 0; }
+
             _cLines.push_back(ALine(_points[idx1].x, _points[idx1].y, _points[idx2].x, _points[idx2].y));
         }
-
     }
 
     PrepareLinesVAO(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
@@ -259,6 +275,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
     _lLines.clear();
     for(size_t a = 0; a < _cLines.size(); a++)
     {
+        /*
         int idx1 = a;
         int idx2 = (a + 1) % _cLines.size();
         int idx3 = (a + 2) % _cLines.size();
@@ -266,6 +283,18 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         ALine prevLine = _cLines[idx1];
         ALine curLine = _cLines[idx2];
         ALine nextLine = _cLines[idx3];
+        */
+
+        int curIdx = a;
+        int prevIdx = a - 1;
+        int nextIdx = a + 1;
+
+        if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
+        else if(curIdx == _cLines.size() - 1) { nextIdx = 0; }
+
+        ALine prevLine = _cLines[prevIdx];
+        ALine curLine = _cLines[curIdx];
+        ALine nextLine = _cLines[nextIdx];
 
         AVector d0Left;
         AVector d0Right;
