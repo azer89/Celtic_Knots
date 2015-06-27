@@ -124,87 +124,43 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         // calculate an initial line
         ALine ln;
         if (curCel._directionType == DirectionType::DIR_UPRIGHT)
-        {
-            ln = ALine(curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing,
-                      (curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing);
-        }
+            { ln = ALine(curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing, (curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing); }
         else if (curCel._directionType == DirectionType::DIR_DOWNRIGHT)
-        {
-            ln = ALine(curIdx.x * gridSpacing, curIdx.y * gridSpacing,
-                      (curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing);
-        }
+            { ln = ALine(curIdx.x * gridSpacing, curIdx.y * gridSpacing, (curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing); }
         else if (curCel._directionType == DirectionType::DIR_DOWNLEFT)
-        {
-            ln = ALine((curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing,
-                       curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing);
-        }
+            { ln = ALine((curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing, curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing); }
         else if (curCel._directionType == DirectionType::DIR_UPLEFT)
-        {
-            ln = ALine((curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing,
-                        curIdx.x * gridSpacing, curIdx.y * gridSpacing);
-        }
+            { ln = ALine((curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing, curIdx.x * gridSpacing, curIdx.y * gridSpacing); }
 
         // determine layer types (start end)
         std::pair<LayerType, LayerType> lTypes;
         if (curCel._directionType == DirectionType::DIR_UPRIGHT)
         {
-            if(IsEven(curIdx.y) && IsEven(curIdx.y))
-            {
-                // UO
-                lTypes.first = LayerType::LAYER_UNDER;
-                lTypes.second = LayerType::LAYER_OVER;
-            }
-            else /*if(!IsEven(curIdx.x) && !IsEven(curIdx.y))*/
-            {
-                // OU
-                lTypes.first = LayerType::LAYER_OVER;
-                lTypes.second = LayerType::LAYER_UNDER;
-            }
+            if(IsEven(curIdx.y) && IsEven(curIdx.y))    // UO
+                { lTypes.first = LayerType::LAYER_UNDER; lTypes.second = LayerType::LAYER_OVER; }
+            else /*if(!IsEven(curIdx.x) && !IsEven(curIdx.y))*/ // OU
+                { lTypes.first = LayerType::LAYER_OVER; lTypes.second = LayerType::LAYER_UNDER; }
         }
         else if (curCel._directionType == DirectionType::DIR_DOWNRIGHT)
         {
-            if(!IsEven(curIdx.x) && IsEven(curIdx.y))
-            {
-                // UO
-                lTypes.first = LayerType::LAYER_UNDER;
-                lTypes.second = LayerType::LAYER_OVER;
-            }
-            else /*if(IsEven(curIdx.x) && !IsEven(curIdx.y))*/
-            {
-                // OU
-                lTypes.first = LayerType::LAYER_OVER;
-                lTypes.second = LayerType::LAYER_UNDER;
-            }
+            if(!IsEven(curIdx.x) && IsEven(curIdx.y))   // UO
+                { lTypes.first = LayerType::LAYER_UNDER; lTypes.second = LayerType::LAYER_OVER; }
+            else /*if(IsEven(curIdx.x) && !IsEven(curIdx.y))*/  // OU
+                { lTypes.first = LayerType::LAYER_OVER; lTypes.second = LayerType::LAYER_UNDER; }
         }
         else if (curCel._directionType == DirectionType::DIR_DOWNLEFT)
         {
-            if(IsEven(curIdx.y) && IsEven(curIdx.y))
-            {
-                // OU
-                lTypes.first = LayerType::LAYER_OVER;
-                lTypes.second = LayerType::LAYER_UNDER;
-            }
-            else /*if(!IsEven(curIdx.x) && !IsEven(curIdx.y))*/
-            {
-                // UO
-                lTypes.first = LayerType::LAYER_UNDER;
-                lTypes.second = LayerType::LAYER_OVER;
-            }
+            if(IsEven(curIdx.y) && IsEven(curIdx.y)) // OU
+                { lTypes.first = LayerType::LAYER_OVER; lTypes.second = LayerType::LAYER_UNDER; }
+            else /*if(!IsEven(curIdx.x) && !IsEven(curIdx.y))*/ // UO
+                { lTypes.first = LayerType::LAYER_UNDER; lTypes.second = LayerType::LAYER_OVER; }
         }
         else if (curCel._directionType == DirectionType::DIR_UPLEFT)
         {
-            if(!IsEven(curIdx.x) && IsEven(curIdx.y))
-            {
-                // OU
-                lTypes.first = LayerType::LAYER_OVER;
-                lTypes.second = LayerType::LAYER_UNDER;
-            }
-            else /*if(IsEven(curIdx.x) && !IsEven(curIdx.y))*/
-            {
-                // UO
-                lTypes.first = LayerType::LAYER_UNDER;
-                lTypes.second = LayerType::LAYER_OVER;
-            }
+            if(!IsEven(curIdx.x) && IsEven(curIdx.y))   // OU
+                { lTypes.first = LayerType::LAYER_OVER; lTypes.second = LayerType::LAYER_UNDER; }
+            else /*if(IsEven(curIdx.x) && !IsEven(curIdx.y))*/  // UO
+                { lTypes.first = LayerType::LAYER_UNDER; lTypes.second = LayerType::LAYER_OVER; }
         }
         layerTypeList1.push_back(lTypes);  //lTypes
         _cLines.push_back(ln);
@@ -217,15 +173,8 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
     {
         size_t curI = a;
         size_t prevI = a - 1;
-        size_t nextI = a + 1;
-        if(curI == 0)
-        {
-            prevI = _cLines.size() - 1;
-        }
-        else if(curI == _cLines.size() - 1)
-        {
-            nextI = 0;
-        }
+        size_t nextI = (a + 1) % _cLines.size();
+        if(curI == 0) { prevI = _cLines.size() - 1; }
 
         AVector offsetVec1 = GetMiddlePoint(tempLines1[prevI].GetPointA(), tempLines1[curI].GetPointA(), tempLines1[curI].GetPointB());
         AVector offsetVec2 = GetMiddlePoint(tempLines1[curI].GetPointA(), tempLines1[curI].GetPointB(), tempLines1[nextI].GetPointB());
@@ -234,62 +183,47 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         offsetVec2 *= 0.5;
 
         if(ccs[a] == CornerCase::COR_START)
-        {
-            _cLines[curI].XB += offsetVec2.x;
-            _cLines[curI].YB += offsetVec2.y;
-        }
+            { _cLines[curI].XB += offsetVec2.x; _cLines[curI].YB += offsetVec2.y; }
         else if(ccs[a] == CornerCase::COR_END)
-        {
-            _cLines[curI].XA += offsetVec1.x;
-            _cLines[curI].YA += offsetVec1.y;
-        }
+            { _cLines[curI].XA += offsetVec1.x; _cLines[curI].YA += offsetVec1.y; }
         else if(ccs[a] == CornerCase::COR_MIDDLE)
         {
-            _cLines[curI].XA += offsetVec1.x;
-            _cLines[curI].YA += offsetVec1.y;
-            _cLines[curI].XB += offsetVec2.x;
-            _cLines[curI].YB += offsetVec2.y;
+            _cLines[curI].XA += offsetVec1.x; _cLines[curI].YA += offsetVec1.y;
+            _cLines[curI].XB += offsetVec2.x; _cLines[curI].YB += offsetVec2.y;
         }
 
         if(curI == _cLines.size() - 1 && !isTracingDone)
-        {
-            _cLines[curI].XB = tempLines1[curI].XB;
-            _cLines[curI].YB = tempLines1[curI].YB;
-        }
+            { _cLines[curI].XB = tempLines1[curI].XB; _cLines[curI].YB = tempLines1[curI].YB; }
 
         if(curI == 0 && !isTracingDone)
-        {
-            _cLines[curI].XA = tempLines1[curI].XA;
-            _cLines[curI].YA = tempLines1[curI].YA;
-        }
+            { _cLines[curI].XA = tempLines1[curI].XA; _cLines[curI].YA = tempLines1[curI].YA; }
     }
 
     // bezier curves
     if(isTracingDone)
     {
+        _urSegments.clear();
+        _orSegments.clear();
         _points.clear();
         for(size_t a = 0; a < _cLines.size(); a++)
         {
             int curIdx = a;
             int prevIdx = a - 1;
-            int nextIdx = a + 1;
+            int nextIdx = (a + 1) % _cLines.size();
 
             if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
-            else if(curIdx == _cLines.size() - 1) { nextIdx = 0; }
+            //else if(curIdx == _cLines.size() - 1) { nextIdx = 0; }
 
             AVector pt1 = _cLines[prevIdx].GetPointA();
             AVector pt2 = _cLines[curIdx].GetPointA();
             AVector pt3 = _cLines[curIdx].GetPointB();
             AVector pt4 = _cLines[nextIdx].GetPointB();
 
-            AVector anchor1;
-            AVector anchor2;
+            AVector anchor1, anchor2;
             CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
 
             float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
             float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
-
-            //std::cout << angle1 << "  -  " << angle2 << "\n";
 
             // layer types
             std::pair<LayerType, LayerType> lTypes = layerTypeList1[curIdx];
@@ -297,6 +231,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
             if(angle1 <= 0.13) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
             if(angle2 <= 0.13) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
 
+            /*
             std::vector<AVector> segmentPoints;
             CurveInterpolation::DeCasteljau(segmentPoints, pt2, anchor1, anchor2, pt3, 1.0f);
 
@@ -306,26 +241,55 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
                 { layerTypeList2.push_back(lTypes.second); }
 
             _points.insert(_points.end(), segmentPoints.begin(), segmentPoints.end());
+            */
+
+            RibbonSegment segment1;
+            RibbonSegment segment2;
+            std::vector<AVector> segmentPoints1;
+            std::vector<AVector> segmentPoints2;
+
+            GeTwoSegments(pt2, anchor1, anchor2, pt3, &segment1, &segment2);
+
+            CurveInterpolation::DeCasteljau(segmentPoints1, segment1._startMPt, segment1._anchor1, segment1._anchor2, segment1._endMPt, 1.0f);
+            CurveInterpolation::DeCasteljau(segmentPoints2, segment2._startMPt, segment2._anchor1, segment2._anchor2, segment2._endMPt, 1.0f);
+
+            segment1._layerType = lTypes.first;
+            segment2._layerType = lTypes.second;
+            segment1._segmentPoints = segmentPoints1;
+            segment2._segmentPoints = segmentPoints2;
+
+            for(size_t a = 0; a < segmentPoints1.size(); a++)
+                { layerTypeList2.push_back(lTypes.first); }
+            for(size_t a = 0; a < segmentPoints2.size(); a++)
+                { layerTypeList2.push_back(lTypes.second); }
+
+            _points.insert(_points.end(), segmentPoints1.begin(), segmentPoints1.end());
+            _points.insert(_points.end(), segmentPoints2.begin(), segmentPoints2.end());
+
+            CalculateRibbonLR(&segment1);
+            CalculateRibbonLR(&segment2);
+
+            // insert segment
+            if(segment1._layerType == LayerType::LAYER_OVER) { _orSegments.push_back(segment1); }   // over
+            else { _urSegments.push_back(segment1); }   // under
+
+            if(segment2._layerType == LayerType::LAYER_OVER) { _orSegments.push_back(segment2); }   // over
+            else { _urSegments.push_back(segment2); }   // under
         }
 
         _cLines.clear();
         for(size_t a = 0; a < _points.size(); a++)
         {
             int idx1 = a;
-            int idx2 = a + 1;
-            if(idx1 == _points.size() - 1) { idx2 = 0; }
-
+            int idx2 = (a + 1) % _points.size();
+            //if(idx1 == _points.size() - 1) { idx2 = 0; }
             _cLines.push_back(ALine(_points[idx1].x, _points[idx1].y, _points[idx2].x, _points[idx2].y));
         }
     }
 
-
-
-    //PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
     if(isTracingDone)
     {
-        // move first to the end
-        std::rotate(layerTypeList2.begin(), layerTypeList2.begin() + 1, layerTypeList2.end());
+        std::rotate(layerTypeList2.begin(), layerTypeList2.begin() + 1, layerTypeList2.end());  // move first to the end
         PrepareLinesVAO2(_cLines, &_cLinesVbo, &_cLinesVao, layerTypeList2);
     }
     else
@@ -333,9 +297,8 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
     }
 
-
-
     // left and right
+    /*
     _rLines.clear();
     _lLines.clear();
     for(size_t a = 0; a < _cLines.size(); a++)
@@ -351,19 +314,12 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         ALine curLine = _cLines[curIdx];
         ALine nextLine = _cLines[nextIdx];
 
-        AVector d0Left;
-        AVector d0Right;
-        AVector d1Left;
-        AVector d1Right;
-
+        AVector d0Left, d0Right, d1Left, d1Right;
         GetSegmentPoints(curLine, prevLine, nextLine, 2, 2, &d0Left, &d0Right, &d1Left, &d1Right);
 
         _lLines.push_back(ALine(d0Left, d1Left));
         _rLines.push_back(ALine(d0Right, d1Right));
     }
-
-    //PrepareLinesVAO1(_lLines, &_lLinesVbo, &_lLinesVao, QVector3D(1.0, 0.0, 0.0));
-    //PrepareLinesVAO1(_rLines, &_rLinesVbo, &_rLinesVao, QVector3D(1.0, 0.0, 0.0));
 
     if(isTracingDone)
     {
@@ -375,6 +331,117 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         PrepareLinesVAO1(_lLines, &_lLinesVbo, &_lLinesVao, QVector3D(1.0, 0.0, 0.0));
         PrepareLinesVAO1(_rLines, &_rLinesVbo, &_rLinesVao, QVector3D(1.0, 0.0, 0.0));
     }
+    */
+}
+
+void TilePainter::CalculateRibbonLR(RibbonSegment* segment)
+{
+    std::vector<ALine> rLines;
+    std::vector<ALine> lLines;
+
+    for(size_t a = 0; a < segment->_segmentPoints.size(); a++)
+    {
+        int curIdx = a;
+        int prevIdx = a - 1;
+        int nextIdx1 = (a + 1) % segment->_segmentPoints.size();
+        int nextIdx2 = (a + 2) % segment->_segmentPoints.size();
+
+        if(curIdx == 0) { prevIdx = segment->_segmentPoints.size() - 1; }
+
+        ALine prevLine = ALine(segment->_segmentPoints[prevIdx], segment->_segmentPoints[curIdx]);
+        ALine curLine =  ALine(segment->_segmentPoints[curIdx], segment->_segmentPoints[nextIdx1]);
+        ALine nextLine = ALine(segment->_segmentPoints[nextIdx1], segment->_segmentPoints[nextIdx2]);
+
+        AVector d0Left, d0Right, d1Left, d1Right;
+        GetSegmentPoints(curLine, prevLine, nextLine, 2, 2, &d0Left, &d0Right, &d1Left, &d1Right);
+
+        lLines.push_back(ALine(d0Left, d1Left));
+        rLines.push_back(ALine(d0Right, d1Right));
+    }
+
+    segment->_rLines = rLines;
+    segment->_lLines = lLines;
+}
+
+void TilePainter::GeTwoSegments(AVector p0, AVector p1, AVector p2, AVector p3, RibbonSegment* segment1, RibbonSegment* segment2)
+{
+    double x0 = p0.x; double y0 = p0.y;
+    double x1 = p1.x; double y1 = p1.y;
+    double x2 = p2.x; double y2 = p2.y;
+    double x3 = p3.x; double y3 = p3.y;
+
+    double splitParam = 0.5;
+
+    double x01 = (x1 - x0) * splitParam + x0;		double x12 = (x2 - x1) * splitParam + x1;		double x23 = (x3 - x2) * splitParam + x2;
+    double y01 = (y1 - y0) * splitParam + y0;		double y12 = (y2 - y1) * splitParam + y1;		double y23 = (y3 - y2) * splitParam + y2;
+
+    double x012 = (x12 - x01) * splitParam + x01;	double x123 = (x23 - x12) * splitParam + x12;
+    double y012 = (y12 - y01) * splitParam + y01;	double y123 = (y23 - y12) * splitParam + y12;
+
+    double x0123 = (x123 - x012) * splitParam + x012;
+    double y0123 = (y123 - y012) * splitParam + y012;
+
+    // AVector(x0, y0),        AVector(x01, y01),   AVector(x012, y012), AVector(x0123, y0123)
+    segment1->_startMPt = AVector(x0, y0);
+    segment1->_endMPt = AVector(x0123, y0123);
+    segment1->_anchor1 = AVector(x01, y01);
+    segment1->_anchor2 = AVector(x012, y012);
+
+    // AVector(x0123,  y0123), AVector(x123, y123), AVector(x23, y23),   AVector(x3, y3)
+    segment2->_startMPt = AVector(x0123,  y0123);
+    segment2->_endMPt = AVector(x3, y3);
+    segment2->_anchor1 = AVector(x123, y123);
+    segment2->_anchor2 = AVector(x23, y23);
+}
+
+void TilePainter::PrepareQuadsVAO(std::vector<RibbonSegment> ribbonSegments, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
+{
+    if(vao->isCreated())
+    {
+        vao->destroy();
+    }
+
+    vao->create();
+    vao->bind();
+
+    QVector<VertexData> data;
+    for(uint a = 0; a < ribbonSegments.size(); a++)
+    {
+        std::vector<ALine> rLines = ribbonSegments[a]._rLines;
+        std::vector<ALine> lLines = ribbonSegments[a]._lLines;
+
+        for(uint b = 0; b < rLines.size(); b++)
+        {
+            int idx1 = b;
+            int idx2 = (b + 1) % rLines.size();
+
+            //data.append(VertexData(QVector3D(rLines[idx1], rLines[],  0), QVector2D(), vecCol));
+        }
+
+        /*
+        data.append(VertexData(QVector3D(ribbonSegments[a]._startRPt.x, ribbonSegments[a]._startRPt.y,  0), QVector2D(), vecCol));
+        data.append(VertexData(QVector3D(ribbonSegments[a]._startLPt.x, ribbonSegments[a]._startLPt.y,  0), QVector2D(), vecCol));
+        data.append(VertexData(QVector3D(ribbonSegments[a]._endLPt.x, ribbonSegments[a]._endLPt.y,  0), QVector2D(), vecCol));
+        data.append(VertexData(QVector3D(ribbonSegments[a]._endRPt.x, ribbonSegments[a]._endRPt.y,  0), QVector2D(), vecCol));
+        */
+    }
+
+    vbo->create();
+    vbo->bind();
+    vbo->allocate(data.data(), data.size() * sizeof(VertexData));
+
+    quintptr offset = 0;
+
+    _shaderProgram->enableAttributeArray(_vertexLocation);
+    _shaderProgram->setAttributeBuffer(_vertexLocation, GL_FLOAT, 0, 3, sizeof(VertexData));
+
+    offset += sizeof(QVector3D);
+    offset += sizeof(QVector2D);
+
+    _shaderProgram->enableAttributeArray(_colorLocation);
+    _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+    vao->release();
 }
 
 void TilePainter::PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)

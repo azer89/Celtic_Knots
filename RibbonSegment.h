@@ -2,7 +2,10 @@
 #define RIBBONSEGMENT_H
 
 #include "AVector.h"
+#include "ALine.h"
 #include "LayerType.h"
+
+#include <vector>
 
 struct RibbonSegment
 {
@@ -20,6 +23,12 @@ public:
     AVector _endLPt;
 
     LayerType _layerType;
+
+    std::vector<AVector> _segmentPoints;
+
+    std::vector<ALine> _rLines;
+    std::vector<ALine> _lLines;
+
 };
 
 #endif // RIBBONSEGMENT_H

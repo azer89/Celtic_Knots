@@ -7,6 +7,7 @@
 #include "ALine.h"
 #include "AVector.h"
 #include "LayerType.h"
+#include "RibbonSegment.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
@@ -43,6 +44,11 @@ private:
     AVector GetMiddlePoint(AVector a, AVector b, AVector c);
     CornerCase GetCornerCase(int i, std::vector<std::vector<CCell>> cells, std::vector<AnIndex> traceList, bool isTracingDone);
 
+    void GeTwoSegments(AVector p0, AVector p1, AVector p2, AVector p3, RibbonSegment* segment1, RibbonSegment* segment2);
+    void CalculateRibbonLR(RibbonSegment* segment);
+
+    void PrepareQuadsVAO(std::vector<RibbonSegment> ribbonSegments, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol);
+
     void PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
     void PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, std::vector<LayerType> layerTypeList);
 
@@ -56,6 +62,29 @@ private:
     //void CreateStraight(CCell cell, AnIndex idx, float gridSpacing);
 
 private:
+
+    // over under
+    std::vector<RibbonSegment>  _urSegments;    // under
+    std::vector<RibbonSegment>  _orSegments;    // over
+
+    // under, left and right
+    std::vector<ALine>          _uLines;
+    QOpenGLBuffer               _uLinesVbo;
+    QOpenGLVertexArrayObject    _uLinesVao;
+
+    // over, left and right
+    std::vector<ALine>          _oLines;
+    QOpenGLBuffer               _oLinesVbo;
+    QOpenGLVertexArrayObject    _oLinesVao;
+
+    // under segments
+    QOpenGLBuffer               _uQuadsVbo;
+    QOpenGLVertexArrayObject    _uQuadsVao;
+
+    // over segments
+    QOpenGLBuffer               _oQuadsVbo;
+    QOpenGLVertexArrayObject    _oQuadsVao;
+
     QOpenGLBuffer               _cLinesVbo;
     QOpenGLVertexArrayObject    _cLinesVao;
     std::vector<ALine>          _cLines;
