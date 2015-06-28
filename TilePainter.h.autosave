@@ -81,12 +81,12 @@ private:
     QOpenGLVertexArrayObject    _oLinesVao;
 
     // under segments
-    int _uQuadsSize;
+    //int _uQuadsSize;
     QOpenGLBuffer               _uQuadsVbo;
     QOpenGLVertexArrayObject    _uQuadsVao;
 
     // over segments
-    int _oQuadsSize;
+    //int _oQuadsSize;
     QOpenGLBuffer               _oQuadsVbo;
     QOpenGLVertexArrayObject    _oQuadsVao;
 
@@ -94,12 +94,12 @@ private:
     QOpenGLVertexArrayObject    _cLinesVao;
     std::vector<ALine>          _cLines;
 
-    QOpenGLBuffer               _rLinesVbo;
-    QOpenGLVertexArrayObject    _rLinesVao;
+    //QOpenGLBuffer               _rLinesVbo;
+    //QOpenGLVertexArrayObject    _rLinesVao;
     std::vector<ALine>          _rLines;
 
-    QOpenGLBuffer               _lLinesVbo;
-    QOpenGLVertexArrayObject    _lLinesVao;
+    //QOpenGLBuffer               _lLinesVbo;
+    //QOpenGLVertexArrayObject    _lLinesVao;
     std::vector<ALine>          _lLines;
 
     QOpenGLBuffer               _debugPointsVbo;

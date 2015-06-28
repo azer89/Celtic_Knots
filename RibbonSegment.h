@@ -24,7 +24,8 @@ public:
 
     LayerType _layerType;
 
-    std::vector<AVector> _segmentPoints;
+    //std::vector<AVector> _segmentPoints;
+    std::vector<ALine> _cLines;
 
     std::vector<ALine> _rLines;
     std::vector<ALine> _lLines;

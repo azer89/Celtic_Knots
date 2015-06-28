@@ -523,7 +523,7 @@ void GLWidget::InitCells()
 {
     _cells.clear();
     _gridSpacing = 10;
-    _gridSize = QSize(4, 4);
+    _gridSize = QSize(3, 3);
 
     // add one row and one column
     _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );
