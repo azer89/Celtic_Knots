@@ -117,7 +117,10 @@ public:
 
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
-    void TraceOneStep();
+    LineType GetLineIntersection(AVector pt);
+    void TraceOneStep1();
+    void TraceOneStep2();
+    double DistanceToFiniteLine(AVector v, AVector w, AVector p);
 
     // zoom in handle
     void ZoomIn();

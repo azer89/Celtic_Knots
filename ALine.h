@@ -6,6 +6,14 @@
 #include <limits>
 #include <cmath>
 
+enum LineType
+{
+    LINE_HORIZONTAL = 0,
+    LINE_VERTICAL = 1,
+    LINE_OTHER = 2,
+    LINE_NONE = 3,  // no line ?
+};
+
 struct ALine
 {
 public:
@@ -57,6 +65,23 @@ public:
         newL.YB = this->YB * val;
 
         return newL;
+    }
+
+    LineType GetLineType()
+    {
+        float xDelta =abs(this->XA - this->XB);
+        float yDelta =abs(this->YA - this->YB);
+        float zero_epsilon = std::numeric_limits<float>::epsilon();
+
+        if(xDelta < zero_epsilon && yDelta > zero_epsilon)
+        {
+            return LineType::LINE_VERTICAL;
+        }
+        else if(xDelta > zero_epsilon && yDelta < zero_epsilon)
+        {
+            return LineType::LINE_HORIZONTAL;
+        }
+        return LineType::LINE_OTHER;
     }
 
     // Uninitialized ?

@@ -6,6 +6,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <iostream>
+
 #include "SystemParams.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -16,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //traceOneStepButton
     connect(ui->traceOneStepButton,	 SIGNAL(clicked()), this, SLOT(TraceOneStep()));
+    connect(ui->showGridCB,	 SIGNAL(stateChanged(int)), this, SLOT(CheckBoxesTriggered()));
 }
 
 MainWindow::~MainWindow()
@@ -25,5 +28,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::TraceOneStep()
 {
-    ui->widget->GetGLWidget()->TraceOneStep();
+    ui->widget->GetGLWidget()->TraceOneStep2();
+}
+
+void MainWindow::CheckBoxesTriggered()
+{
+    SystemParams::show_grid = ui->showGridCB->isChecked();
+    ui->widget->GetGLWidget()->repaint();
+    //std::cout << "checkbox\n";
 }
