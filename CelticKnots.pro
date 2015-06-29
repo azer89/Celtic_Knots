@@ -17,7 +17,8 @@ SOURCES += main.cpp\
     GLContainer.cpp \
     GLWidget.cpp \
     TilePainter.cpp \
-    CurveInterpolation.cpp
+    CurveInterpolation.cpp \
+    SystemParams.cpp
 
 HEADERS  += mainwindow.h \
     GLContainer.h \
@@ -32,7 +33,8 @@ HEADERS  += mainwindow.h \
     TilePainter.h \
     CurveInterpolation.h \
     LayerType.h \
-    RibbonSegment.h
+    RibbonSegment.h \
+    SystemParams.h
 
 FORMS    += mainwindow.ui
 

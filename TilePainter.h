@@ -56,6 +56,7 @@ private:
 
     void PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
     void PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, std::vector<LayerType> layerTypeList);
+    void PrepareLinesVAO3(std::vector<ALine> rLines, std::vector<ALine> lLines, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol);
 
     double AngleInBetween(AVector vec1, AVector vec2);
     void GetSegmentPoints(ALine curLine, ALine prevLine, ALine nextLine, double t0, double t1, AVector* pA, AVector* pB, AVector* pC, AVector* pD);
@@ -73,37 +74,35 @@ private:
     std::vector<RibbonSegment>  _orSegments;    // over
 
     // under, left and right
-    std::vector<ALine>          _uLines;
-    QOpenGLBuffer               _uLinesVbo;
-    QOpenGLVertexArrayObject    _uLinesVao;
+    //std::vector<ALine>          _uLines;
+    //QOpenGLBuffer               _uLinesVbo;
+    //QOpenGLVertexArrayObject    _uLinesVao;
 
     // over, left and right
-    std::vector<ALine>          _oLines;
-    QOpenGLBuffer               _oLinesVbo;
-    QOpenGLVertexArrayObject    _oLinesVao;
+    //std::vector<ALine>          _oLines;
+    //QOpenGLBuffer               _oLinesVbo;
+    //QOpenGLVertexArrayObject    _oLinesVao;
 
-    //std::vector<ALine>          _rLines;
-    //std::vector<ALine>          _lLines;
-    //std::vector<ALine>          _uRLines;
-    //std::vector<ALine>          _uLLines;
     std::vector<ALine> _urLines;
     std::vector<ALine> _ulLines;
     std::vector<ALine> _orLines;
     std::vector<ALine> _olLines;
 
-    // under segments
-    //int _uQuadsSize;
     QOpenGLBuffer               _uQuadsVbo;
     QOpenGLVertexArrayObject    _uQuadsVao;
 
-    // over segments
-    //int _oQuadsSize;
     QOpenGLBuffer               _oQuadsVbo;
     QOpenGLVertexArrayObject    _oQuadsVao;
 
     QOpenGLBuffer               _cLinesVbo;
     QOpenGLVertexArrayObject    _cLinesVao;
     std::vector<ALine>          _cLines;
+
+    QOpenGLBuffer               _uLinesVbo;
+    QOpenGLVertexArrayObject    _uLinesVao;
+
+    QOpenGLBuffer               _oLinesVbo;
+    QOpenGLVertexArrayObject    _oLinesVao;
 
     //QOpenGLBuffer               _rLinesVbo;
     //QOpenGLVertexArrayObject    _rLinesVao;
