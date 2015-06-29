@@ -19,11 +19,18 @@ MainWindow::MainWindow(QWidget *parent) :
     //traceOneStepButton
     connect(ui->traceOneStepButton,	 SIGNAL(clicked()), this, SLOT(TraceOneStep()));
     connect(ui->showGridCB,	 SIGNAL(stateChanged(int)), this, SLOT(CheckBoxesTriggered()));
+    connect(ui->generateAKnotButton,	 SIGNAL(clicked()), this, SLOT(GenerateAKnot()));
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::GenerateAKnot()
+{
+     ui->widget->GetGLWidget()->GenerateAKnot();
+     ui->widget->GetGLWidget()->repaint();
 }
 
 void MainWindow::TraceOneStep()
@@ -35,5 +42,4 @@ void MainWindow::CheckBoxesTriggered()
 {
     SystemParams::show_grid = ui->showGridCB->isChecked();
     ui->widget->GetGLWidget()->repaint();
-    //std::cout << "checkbox\n";
 }

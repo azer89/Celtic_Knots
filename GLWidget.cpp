@@ -364,6 +364,156 @@ LineType GLWidget::GetLineIntersection(AVector pt)
     return LineType::LINE_NONE;
 }
 
+void GLWidget::ResetData()
+{
+    _isTracingDone = false;
+    _traceList.clear();
+
+    for(int a = 0; a < _cells.size(); a++)
+    {
+        for(int b = 0; b < _cells[a].size(); b++)
+            { _cells[a][b]._isVisited = false; }
+    }
+}
+
+void GLWidget::GenerateAKnot()
+{
+    ResetData();
+
+    while(!_isTracingDone)
+    {
+        TraceOneStep2();
+    }
+}
+
+void GLWidget::TraceOneStep2()
+{
+    if(_traceList.size() == 0)
+    {
+        _isTracingDone = false;
+
+        AnIndex startIdx(0, 0);
+
+        _traceList.push_back(startIdx); // put in list
+        _cells[startIdx.x][startIdx.y]._isVisited = true; // mark
+        _cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
+        _cells[startIdx.x][startIdx.y]._directionType = DirectionType::DIR_UPRIGHT; // (0,0) always upright or downleft
+
+        _tilePainter->SetTiles(_cells, _traceList, _gridSpacing, _isTracingDone);
+        this->repaint();
+    }
+    else if(!_isTracingDone)
+    {
+        AnIndex curIdx = _traceList[_traceList.size() - 1];
+        _cells[curIdx.x][curIdx.y]._isVisited = true;
+
+        DirectionType curDir =_cells[curIdx.x][curIdx.y]._directionType;
+
+        AnIndex urIdx(curIdx.x + 1, curIdx.y - 1);    // up right
+        AnIndex drIdx(curIdx.x + 1, curIdx.y + 1);    // down right
+        AnIndex dlIdx(curIdx.x - 1, curIdx.y + 1);    // down left
+        AnIndex ulIdx(curIdx.x - 1, curIdx.y - 1);    // up left
+
+        AnIndex rIdx(curIdx.x + 1, curIdx.y    );     // right
+        AnIndex dIdx(curIdx.x    , curIdx.y + 1);     // down
+        AnIndex lIdx(curIdx.x - 1, curIdx.y    );     // left
+        AnIndex uIdx(curIdx.x    , curIdx.y - 1);     // up
+
+        AVector endVec;
+        if(curDir == DirectionType::DIR_UPRIGHT)
+            { endVec = AVector(rIdx.x  * _gridSpacing, rIdx.y * _gridSpacing); }
+        else if(curDir == DirectionType::DIR_DOWNRIGHT)
+            { endVec = AVector(drIdx.x  * _gridSpacing, drIdx.y * _gridSpacing); }
+        else if(curDir == DirectionType::DIR_DOWNLEFT)
+            { endVec = AVector(dIdx.x  * _gridSpacing, dIdx.y * _gridSpacing); }
+        else if(curDir == DirectionType::DIR_UPLEFT)
+            { endVec = AVector(curIdx.x  * _gridSpacing, curIdx.y * _gridSpacing); }
+
+        LineType hitType = GetLineIntersection(endVec);
+
+        if(curDir == DirectionType::DIR_UPRIGHT && hitType == LineType::LINE_NONE)
+        {
+            _traceList.push_back(urIdx);
+            _cells[urIdx.x][urIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+        }
+        else if(curDir == DirectionType::DIR_DOWNRIGHT && hitType == LineType::LINE_NONE)
+        {
+            _traceList.push_back(drIdx);
+            _cells[drIdx.x][drIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+        }
+        else if(curDir == DirectionType::DIR_DOWNLEFT && hitType == LineType::LINE_NONE)
+        {
+            _traceList.push_back(dlIdx);
+            _cells[dlIdx.x][dlIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+        }
+        else if(curDir == DirectionType::DIR_UPLEFT && hitType == LineType::LINE_NONE)
+        {
+            _traceList.push_back(ulIdx);
+            _cells[ulIdx.x][ulIdx.y]._directionType = DirectionType::DIR_UPLEFT;
+        }
+        else if(curDir == DirectionType::DIR_UPRIGHT)
+        {
+            if(hitType == LineType::LINE_VERTICAL)  // up left
+            {
+                _traceList.push_back(uIdx);
+                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
+            }
+            else    // down right
+            {
+                _traceList.push_back(rIdx);
+                _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+            }
+        }
+        else if(curDir == DirectionType::DIR_DOWNRIGHT)
+        {
+            if(hitType == LineType::LINE_VERTICAL)  // down left
+            {
+                _traceList.push_back(dIdx);
+                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+            }
+            else    // up right
+            {
+                _traceList.push_back(rIdx);
+                _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+            }
+        }
+        else if(curDir == DirectionType::DIR_DOWNLEFT)
+        {
+            if(hitType == LineType::LINE_VERTICAL)  // down right
+            {
+                _traceList.push_back(dIdx);
+                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+            }
+            else    // up left
+            {
+                _traceList.push_back(lIdx);
+                _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_UPLEFT;
+            }
+        }
+        else if(curDir == DirectionType::DIR_UPLEFT)
+        {
+            if(hitType == LineType::LINE_VERTICAL)  // up right
+            {
+                _traceList.push_back(uIdx);
+                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+            }
+            else    // down left
+            {
+                _traceList.push_back(lIdx);
+                _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+            }
+        }
+
+        // check if we revisit a cell which means done
+        AnIndex nextIdx = _traceList[_traceList.size() - 1];
+        if(_cells[nextIdx.x][nextIdx.y]._isVisited)
+            { _isTracingDone = true; }
+
+        _tilePainter->SetTiles(_cells, _traceList, _gridSpacing, _isTracingDone);
+        this->repaint();
+    }
+}
+
 // todo
 // should be done with line intersection
 void GLWidget::TraceOneStep1()
@@ -514,162 +664,9 @@ void GLWidget::TraceOneStep1()
     }
 }
 
-// todo
-// should be done with line intersection
-void GLWidget::TraceOneStep2()
-{
-    if(_traceList.size() == 0)
-    {
-        _isTracingDone = false;
 
-        AnIndex startIdx(0, 0);
 
-        _traceList.push_back(startIdx); // put in list
-        _cells[startIdx.x][startIdx.y]._isVisited = true; // mark
-        _cells[startIdx.x][startIdx.y]._tileType = TileType::TILE_CORNER;   // because (0,0)
-        _cells[startIdx.x][startIdx.y]._directionType = DirectionType::DIR_UPRIGHT; // (0,0) always upright or downleft
 
-        _tilePainter->SetTiles(_cells, _traceList, _gridSpacing, _isTracingDone);
-        this->repaint();
-    }
-    else if(!_isTracingDone)
-    {
-        AnIndex curIdx = _traceList[_traceList.size() - 1];
-        _cells[curIdx.x][curIdx.y]._isVisited = true;
-
-        //std::cout << curIdx.x << ", " << curIdx.y << "\n";
-
-        DirectionType curDir =_cells[curIdx.x][curIdx.y]._directionType;
-
-        AnIndex urIdx(curIdx.x + 1, curIdx.y - 1);    // up right
-        AnIndex drIdx(curIdx.x + 1, curIdx.y + 1);    // down right
-        AnIndex dlIdx(curIdx.x - 1, curIdx.y + 1);    // down left
-        AnIndex ulIdx(curIdx.x - 1, curIdx.y - 1);    // up left
-
-        AnIndex rIdx(curIdx.x + 1, curIdx.y    );     // right
-        AnIndex dIdx(curIdx.x    , curIdx.y + 1);     // down
-        AnIndex lIdx(curIdx.x - 1, curIdx.y    );     // left
-        AnIndex uIdx(curIdx.x    , curIdx.y - 1);     // up
-
-        AVector endVec;
-        if(curDir == DirectionType::DIR_UPRIGHT)
-            { endVec = AVector(rIdx.x  * _gridSpacing, rIdx.y * _gridSpacing); }
-        else if(curDir == DirectionType::DIR_DOWNRIGHT)
-            { endVec = AVector(drIdx.x  * _gridSpacing, drIdx.y * _gridSpacing); }
-        else if(curDir == DirectionType::DIR_DOWNLEFT)
-            { endVec = AVector(dIdx.x  * _gridSpacing, dIdx.y * _gridSpacing); }
-        else if(curDir == DirectionType::DIR_UPLEFT)
-            { endVec = AVector(curIdx.x  * _gridSpacing, curIdx.y * _gridSpacing); }
-
-        LineType hitType = GetLineIntersection(endVec);
-
-        if(curDir == DirectionType::DIR_UPRIGHT && hitType == LineType::LINE_NONE)
-        {
-            //std::cout << "1\n";
-            _traceList.push_back(urIdx);
-            _cells[urIdx.x][urIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
-        }
-        else if(curDir == DirectionType::DIR_DOWNRIGHT && hitType == LineType::LINE_NONE)
-        {
-            //std::cout << "2\n";
-            _traceList.push_back(drIdx);
-            _cells[drIdx.x][drIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
-        }
-        else if(curDir == DirectionType::DIR_DOWNLEFT && hitType == LineType::LINE_NONE)
-        {
-            //std::cout << "3\n";
-            _traceList.push_back(dlIdx);
-            _cells[dlIdx.x][dlIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
-        }
-        else if(curDir == DirectionType::DIR_UPLEFT && hitType == LineType::LINE_NONE)
-        {
-            //std::cout << "4\n";
-            _traceList.push_back(ulIdx);
-            _cells[ulIdx.x][ulIdx.y]._directionType = DirectionType::DIR_UPLEFT;
-        }
-
-        // if curdir up right   && hitawall(r)
-        else if(curDir == DirectionType::DIR_UPRIGHT)
-        {
-            // up left
-            if(hitType == LineType::LINE_VERTICAL)
-            {
-                //std::cout << "5\n";
-                _traceList.push_back(uIdx);
-                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
-            }
-            // down right
-            else
-            {
-                //std::cout << "6\n";
-                _traceList.push_back(rIdx);
-                _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
-            }
-        }
-        // if curdir down right && hitawall(dr)
-        else if(curDir == DirectionType::DIR_DOWNRIGHT)
-        {
-            // down left
-            if(hitType == LineType::LINE_VERTICAL)
-            {
-                //std::cout << "7\n";
-                _traceList.push_back(dIdx);
-                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
-            }
-            // up right
-            else
-            {
-                //std::cout << "8\n";
-                _traceList.push_back(rIdx);
-                _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
-            }
-        }
-        // if curdir down left  && hitawall(d)
-        else if(curDir == DirectionType::DIR_DOWNLEFT)
-        {
-            // down right
-            if(hitType == LineType::LINE_VERTICAL)
-            {
-                //std::cout << "9\n";
-                _traceList.push_back(dIdx);
-                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
-            }
-            // up left
-            else
-            {
-                //std::cout << "10\n";
-                _traceList.push_back(lIdx);
-                _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_UPLEFT;
-            }
-        }
-        // if curdir up left    && hitawall(c)
-        else if(curDir == DirectionType::DIR_UPLEFT)
-        {
-            // up right
-            if(hitType == LineType::LINE_VERTICAL)
-            {
-                //std::cout << "11\n";
-                _traceList.push_back(uIdx);
-                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
-            }
-            // down left
-            else
-            {
-                //std::cout << "12\n";
-                _traceList.push_back(lIdx);
-                _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
-            }
-        }
-
-        // check if we revisit a cell which means done
-        AnIndex nextIdx = _traceList[_traceList.size() - 1];
-        if(_cells[nextIdx.x][nextIdx.y]._isVisited)
-            { _isTracingDone = true; }
-
-        _tilePainter->SetTiles(_cells, _traceList, _gridSpacing, _isTracingDone);
-        this->repaint();
-    }
-}
 
 void GLWidget::InitCells()
 {
@@ -684,6 +681,7 @@ void GLWidget::InitCells()
     _img_height = (_actualGridSize.height() - 1) * _gridSpacing;
 
     // add break lines
+    _breakLines.clear();
     _breakLines.push_back(ALine(0, 0, _img_width, 0));
     _breakLines.push_back(ALine(0, 0, 0, _img_height));
     _breakLines.push_back(ALine(_img_width, 0, _img_width, _img_height));

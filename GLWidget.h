@@ -118,6 +118,8 @@ public:
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
     LineType GetLineIntersection(AVector pt);
+    void ResetData();
+    void GenerateAKnot();
     void TraceOneStep1();
     void TraceOneStep2();
     double DistanceToFiniteLine(AVector v, AVector w, AVector p);
