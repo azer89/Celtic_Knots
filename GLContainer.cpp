@@ -314,6 +314,11 @@ void GLContainer::keyPressEvent(QKeyEvent *event)
         QApplication::setOverrideCursor(Qt::OpenHandCursor);
     }
     //if(event->key() == Qt::Key_C) { this->glWidget->DoClustering(); }
+    if(event->key() == Qt::Key_Backspace)
+    {
+        this->_glWidget->UndoBreakMarkers();
+        this->_glWidget->repaint();
+    }
 
     _glWidget->updateGL();
 }

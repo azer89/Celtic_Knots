@@ -639,7 +639,7 @@ void TilePainter::DrawTiles()
     {
         _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
         _uLinesVao.bind();
-        glLineWidth(3.0f);
+        glLineWidth(4.0f);
         glDrawArrays(GL_LINES, 0, _urLines.size() * 4);
         _uLinesVao.release();
     }
@@ -656,7 +656,7 @@ void TilePainter::DrawTiles()
     {
         _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
         _oLinesVao.bind();
-        glLineWidth(3.0f);
+        glLineWidth(4.0f);
         glDrawArrays(GL_LINES, 0, _orLines.size() * 4);
         _oLinesVao.release();
     }

@@ -82,8 +82,7 @@ private:
     bool _shouldUpdateScrolls;
 
 private:
-    void InitCells();
-    void InitDots();
+
 
     void InitCurve();        // demo
     void PaintCurve();       // demo
@@ -118,7 +117,12 @@ public:
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
     LineType GetLineIntersection(AVector pt);
+
+    void UndoBreakMarkers();
+    void InitCells();
+    void InitDots();
     void ResetData();
+
     void GenerateAKnot();
     void TraceOneStep1();
     void TraceOneStep2();

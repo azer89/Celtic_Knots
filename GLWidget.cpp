@@ -63,11 +63,8 @@ void GLWidget::initializeGL()
     InitDots();
 
     // a bad thing
-    _tilePainter = new TilePainter();
-    _tilePainter->_shaderProgram = _shaderProgram;
-    _tilePainter->_colorLocation = _colorLocation;
-    _tilePainter->_vertexLocation = _vertexLocation;
-    _tilePainter->_use_color_location = _use_color_location;
+    ResetData();
+
 }
 
 bool GLWidget::event( QEvent * event )
@@ -209,18 +206,21 @@ void GLWidget::mouseMoveEvent(int x, int y)
         AnIndex idx = GetIndex(AVector(dx, dy));
         AVector gVec(idx.x * _gridSpacing, idx.y * _gridSpacing);
 
-        if( _cells[idx.x][idx.y]._cellSign != CellSign::SIGN_EMPTY && (_drawStartIndex.x == idx.x || _drawStartIndex.y == idx.y))
+        //if( _cells[idx.x][idx.y]._cellSign != CellSign::SIGN_EMPTY && (_drawStartIndex.x == idx.x || _drawStartIndex.y == idx.y))
+        //{
+        _drawBreakLine.XB = gVec.x;
+        _drawBreakLine.YB = gVec.y;
+
+        _drawEndIndex.x = idx.x;
+        _drawEndIndex.y = idx.y;
+
+        if(_drawBreakLine.GetLineType() == LineType::LINE_HORIZONTAL || _drawBreakLine.GetLineType() == LineType::LINE_VERTICAL)
         {
-            _drawBreakLine.XB = gVec.x;
-            _drawBreakLine.YB = gVec.y;
-
-            _drawEndIndex.x = idx.x;
-            _drawEndIndex.y = idx.y;
-
             std::vector<ALine> linev;
             linev.push_back(_drawBreakLine);
             PrepareLinesVAO(linev, &_drawBreakVbo, &_drawBreakVao, QVector3D(0.0, 0.0, 0.0));
         }
+        //}
     }
 
 
@@ -240,7 +240,7 @@ void GLWidget::mouseReleaseEvent(int x, int y)
     dy /= _zoomFactor;
 
     // your stuff
-    if(_drawBreakVao.isCreated())
+    if(_drawBreakVao.isCreated() && _drawBreakLine.GetLineType() == LineType::LINE_HORIZONTAL || _drawBreakLine.GetLineType() == LineType::LINE_VERTICAL)
     {
         _breakLines.push_back(_drawBreakLine);
         PrepareLinesVAO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
@@ -260,6 +260,7 @@ void GLWidget::mouseReleaseEvent(int x, int y)
             }
         }
 
+        /*
         for(size_t b = 0; b < _actualGridSize.height(); b++)
         {
             for(size_t a = 0; a < _actualGridSize.width(); a++)
@@ -272,6 +273,7 @@ void GLWidget::mouseReleaseEvent(int x, int y)
             }
             std::cout << "\n";
         }
+        */
     }
 
 
@@ -364,6 +366,14 @@ LineType GLWidget::GetLineIntersection(AVector pt)
     return LineType::LINE_NONE;
 }
 
+void GLWidget::UndoBreakMarkers()
+{
+    if(_breakLines.size() > 0)
+    {
+        _breakLines.pop_back();
+    }
+}
+
 void GLWidget::ResetData()
 {
     _isTracingDone = false;
@@ -374,6 +384,14 @@ void GLWidget::ResetData()
         for(int b = 0; b < _cells[a].size(); b++)
             { _cells[a][b]._isVisited = false; }
     }
+
+    if(_tilePainter) { delete _tilePainter; }
+
+    _tilePainter = new TilePainter();
+    _tilePainter->_shaderProgram = _shaderProgram;
+    _tilePainter->_colorLocation = _colorLocation;
+    _tilePainter->_vertexLocation = _vertexLocation;
+    _tilePainter->_use_color_location = _use_color_location;
 }
 
 void GLWidget::GenerateAKnot()
@@ -672,7 +690,7 @@ void GLWidget::InitCells()
 {
     _cells.clear();
     _gridSpacing = 10;
-    _gridSize = QSize(4, 4);
+    _gridSize = QSize(SystemParams::w , SystemParams::h);
 
     // add one row and one column
     _actualGridSize = QSize((_gridSize.width() - 1) * 2 + 1, (_gridSize.height() - 1) * 2 + 1 );
@@ -752,9 +770,7 @@ void GLWidget::InitCells()
 void GLWidget::InitDots()
 {
     if(_dotsVao.isCreated())
-    {
-        _dotsVao.destroy();
-    }
+        { _dotsVao.destroy(); }
     _dotsVao.create();
     _dotsVao.bind();
 

@@ -9,6 +9,9 @@ public:
 
 public:
     static bool show_grid;
+
+    static int w;
+    static int h;
 };
 
 #endif // SYSTEMPARAMS_H

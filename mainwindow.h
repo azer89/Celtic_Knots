@@ -27,6 +27,7 @@ private slots:
     void TraceOneStep();
     void GenerateAKnot();
     void CheckBoxesTriggered();
+    void DimensionChanged();
 };
 
 #endif // MAINWINDOW_H
