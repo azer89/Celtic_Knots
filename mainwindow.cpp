@@ -38,7 +38,7 @@ void MainWindow::GenerateAKnot()
 
 void MainWindow::TraceOneStep()
 {
-    ui->widget->GetGLWidget()->TraceOneStep2();
+    ui->widget->GetGLWidget()->TraceOneStep();
 }
 
 void MainWindow::CheckBoxesTriggered()

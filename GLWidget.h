@@ -125,8 +125,7 @@ public:
     void ResetData();
 
     void GenerateAKnot();
-    void TraceOneStep1();
-    void TraceOneStep2();
+    void TraceOneStep();
     double DistanceToFiniteLine(AVector v, AVector w, AVector p);
 
     // zoom in handle

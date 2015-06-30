@@ -17,7 +17,25 @@ TilePainter::~TilePainter()
 
 CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cells, std::vector<AnIndex> traceList, bool isTracingDone)
 {
-    AnIndex curIdx = traceList[i];
+    /*
+    for(int a = 0; a < traceList.size(); a++)
+    {
+        CCell cell = cells[traceList[a].x][traceList[a].y];
+        DirectionType dType = cell._directionType;
+
+        if(dType == DirectionType::DIR_DOWNLEFT || dType == DirectionType::DIR_UPRIGHT)
+        {
+            std::cout << " / ";
+        }
+        else
+        {
+            std::cout << " \\ ";
+        }
+    }
+    std::cout << "\n";
+    */
+
+    //AnIndex curIdx = traceList[i];
     if(traceList.size() == 1)
     {
         // nothing
