@@ -96,6 +96,7 @@ private:
     AnIndex GetIndex(AVector vec);
     bool DoesHitAWall(AnIndex idx);
     bool IsACorner(AnIndex idx);
+    bool IsValid(AnIndex idx);
 
 protected:
     // qt event

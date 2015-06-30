@@ -312,6 +312,17 @@ AnIndex GLWidget::GetIndex(AVector vec)
     return AnIndex(intpartx, intparty);
 }
 
+bool GLWidget::IsValid(AnIndex idx)
+{
+    QSize gridDim(_actualGridSize.width() -1, _actualGridSize.height() -1);
+    //std::cout << "isvalid " << gridDim.width() << " " << gridDim.height() << "\n";
+    if(idx.x < 0 || idx.x >= gridDim.width() || idx.y < 0 || idx.y >= gridDim.height())
+    {
+        return false;
+    }
+    return true;
+}
+
 bool GLWidget::DoesHitAWall(AnIndex idx)
 {
     CCell aCell = _cells[idx.x][idx.y];
@@ -348,17 +359,22 @@ LineType GLWidget::GetLineIntersection(AVector pt)
 {
     float dist = std::numeric_limits<float>::max();
     LineType lType = LineType::LINE_NONE;
+    float eps = std::numeric_limits<float>::epsilon() * 100;
+    //std::cout << _breakLines.size() << "\n";
     for(int a = 0; a < _breakLines.size(); a++)
     {
         ALine aLine = _breakLines[a];
         float d = DistanceToFiniteLine(aLine.GetPointA(), aLine.GetPointB(), pt);
         if(d < dist)
         {
+
             dist = d;
             lType = aLine.GetLineType();
+            //std:: cout << d << " " << std::numeric_limits<float>::epsilon() << " (" << lType << ") ";
         }
     }
-    if(dist < std::numeric_limits<float>::epsilon())
+    std::cout << "\n";
+    if(dist < eps)
     {
         return lType;
     }
@@ -449,76 +465,88 @@ void GLWidget::TraceOneStep2()
 
         LineType hitType = GetLineIntersection(endVec);
 
-        if(curDir == DirectionType::DIR_UPRIGHT && hitType == LineType::LINE_NONE)
+        if(curDir == DirectionType::DIR_UPRIGHT && IsValid(urIdx) && hitType == LineType::LINE_NONE)
         {
+            std::cout << "[1] " << hitType << " - " << urIdx.x << " " << urIdx.y << "\n";
             _traceList.push_back(urIdx);
             _cells[urIdx.x][urIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
         }
-        else if(curDir == DirectionType::DIR_DOWNRIGHT && hitType == LineType::LINE_NONE)
+        else if(curDir == DirectionType::DIR_DOWNRIGHT && IsValid(drIdx) && hitType == LineType::LINE_NONE)
         {
+            std::cout << "[2] " << hitType << " - " << drIdx.x << " " << drIdx.y << "\n";
             _traceList.push_back(drIdx);
             _cells[drIdx.x][drIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
         }
-        else if(curDir == DirectionType::DIR_DOWNLEFT && hitType == LineType::LINE_NONE)
+        else if(curDir == DirectionType::DIR_DOWNLEFT && IsValid(dlIdx) && hitType == LineType::LINE_NONE)
         {
+            std::cout << "[3] " << hitType << " - " << dlIdx.x << " " << dlIdx.y << "\n";
             _traceList.push_back(dlIdx);
             _cells[dlIdx.x][dlIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
         }
-        else if(curDir == DirectionType::DIR_UPLEFT && hitType == LineType::LINE_NONE)
+        else if(curDir == DirectionType::DIR_UPLEFT && IsValid(ulIdx) && hitType == LineType::LINE_NONE)
         {
+            std::cout << "[4] " << hitType << " - " << ulIdx.x << " " << ulIdx.y << "\n";
             _traceList.push_back(ulIdx);
             _cells[ulIdx.x][ulIdx.y]._directionType = DirectionType::DIR_UPLEFT;
         }
-        else if(curDir == DirectionType::DIR_UPRIGHT)
+        else if(curDir == DirectionType::DIR_UPRIGHT && ( IsValid(rIdx) || IsValid(uIdx) )  )
         {
-            if(hitType == LineType::LINE_VERTICAL)  // up left
+            if(hitType == LineType::LINE_HORIZONTAL && IsValid(rIdx))
             {
-                _traceList.push_back(uIdx);
-                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
-            }
-            else    // down right
-            {
+                std::cout << "[5] " << hitType << " - " << rIdx.x << " " << rIdx.y << "\n";
                 _traceList.push_back(rIdx);
                 _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
-        }
-        else if(curDir == DirectionType::DIR_DOWNRIGHT)
-        {
-            if(hitType == LineType::LINE_VERTICAL)  // down left
+            else
             {
-                _traceList.push_back(dIdx);
-                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+                std::cout << "[6] " << hitType << " - " << uIdx.x << " " << uIdx.y << "\n";
+                _traceList.push_back(uIdx);
+                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
-            else    // up right
+        }
+        else if(curDir == DirectionType::DIR_DOWNRIGHT && ( IsValid(rIdx) || IsValid(dIdx) ))
+        {
+            if(hitType == LineType::LINE_HORIZONTAL && IsValid(rIdx))
             {
+                std::cout << "[7] " << hitType << " - " << rIdx.x << " " << rIdx.y << "\n";
                 _traceList.push_back(rIdx);
                 _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
             }
-        }
-        else if(curDir == DirectionType::DIR_DOWNLEFT)
-        {
-            if(hitType == LineType::LINE_VERTICAL)  // down right
+            else
             {
+                std::cout << "[8] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
                 _traceList.push_back(dIdx);
-                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
+                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
             }
-            else    // up left
+        }
+        else if(curDir == DirectionType::DIR_DOWNLEFT && ( IsValid(lIdx) || IsValid(dIdx) ))
+        {
+            if(hitType == LineType::LINE_HORIZONTAL && IsValid(lIdx))   // up left
             {
+                std::cout << "[9] " << hitType << " - " << lIdx.x << " " << lIdx.y << "\n";
                 _traceList.push_back(lIdx);
                 _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
-        }
-        else if(curDir == DirectionType::DIR_UPLEFT)
-        {
-            if(hitType == LineType::LINE_VERTICAL)  // up right
+            else        // down right
             {
-                _traceList.push_back(uIdx);
-                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
+                std::cout << "[10] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
+                _traceList.push_back(dIdx);
+                _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
-            else    // down left
+        }
+        else if(curDir == DirectionType::DIR_UPLEFT && ( IsValid(lIdx) || IsValid(uIdx) ))
+        {
+            if(hitType == LineType::LINE_HORIZONTAL && IsValid(lIdx))
             {
+                std::cout << "[11] " << hitType << " - " << lIdx.x << " " << lIdx.y << "\n";
                 _traceList.push_back(lIdx);
                 _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
+            }
+            else
+            {
+                std::cout << "[12] " << hitType << " - " << uIdx.x << " " << uIdx.y << "\n";
+                _traceList.push_back(uIdx);
+                _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
             }
         }
 
@@ -620,6 +648,7 @@ void GLWidget::TraceOneStep1()
         // if curdir down right && hitawall(dr)
         else if(curDir == DirectionType::DIR_DOWNRIGHT && DoesHitAWall(drIdx))
         {
+
             // down left
             if(curIdx.y < _actualGridSize.height() - 2 && DoesHitAWall(AnIndex(drIdx.x, drIdx.y + 1)))
             {

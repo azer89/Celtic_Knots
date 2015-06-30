@@ -25,6 +25,7 @@ public:
 
     bool operator== (const AnIndex& other)
     { return this->x == other.x && this->y == other.y; }
+
 };
 
 #endif // ANINDEX_H

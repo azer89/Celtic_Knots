@@ -59,6 +59,7 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
         CCell prevC = cells[traceList[prevI].x][traceList[prevI].y];
         CCell curC = cells[traceList[curI].x][traceList[curI].y];
         CCell nextC = cells[traceList[nextI].x][traceList[nextI].y];
+        //std::cout  << " (" << prevI << "," << curI << "," << nextI << ")\n";
 
         // middle
         if(curC._directionType != prevC._directionType && curC._directionType != nextC._directionType)
