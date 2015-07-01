@@ -48,12 +48,10 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
 
         if(i == 0 && changeDir )  // start ?
         {
-            //std::cout << "s ";
             return CornerCase::COR_START;
         }
         else if(i == 1 && changeDir) // end ?
         {
-            //std::cout << "e ";
             return CornerCase::COR_END;
         }
     }
@@ -77,7 +75,6 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
         CCell prevC = cells[traceList[prevI].x][traceList[prevI].y];
         CCell curC = cells[traceList[curI].x][traceList[curI].y];
         CCell nextC = cells[traceList[nextI].x][traceList[nextI].y];
-        //std::cout  << " (" << prevI << "," << curI << "," << nextI << ")\n";
 
         // middle
         if(curC._directionType != prevC._directionType && curC._directionType != nextC._directionType)
@@ -156,13 +153,18 @@ ALine TilePainter::GetLineInACell(CCell curCel, float gridSpacing, AnIndex curId
 {
     ALine ln;
     if (curCel._directionType == DirectionType::DIR_UPRIGHT)
-        { ln = ALine(curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing, (curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing); }
+        { ln = ALine(curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing,
+                    (curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing); }
     else if (curCel._directionType == DirectionType::DIR_DOWNRIGHT)
-        { ln = ALine(curIdx.x * gridSpacing, curIdx.y * gridSpacing, (curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing); }
+        { ln = ALine(curIdx.x * gridSpacing, curIdx.y * gridSpacing,
+                    (curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing); }
     else if (curCel._directionType == DirectionType::DIR_DOWNLEFT)
-        { ln = ALine((curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing, curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing); }
+        { ln = ALine((curIdx.x + 1) * gridSpacing, curIdx.y * gridSpacing,
+                     curIdx.x * gridSpacing, (curIdx.y + 1) * gridSpacing); }
     else if (curCel._directionType == DirectionType::DIR_UPLEFT)
-        { ln = ALine((curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing, curIdx.x * gridSpacing, curIdx.y * gridSpacing); }
+        { ln = ALine((curIdx.x + 1) * gridSpacing, (curIdx.y + 1) * gridSpacing,
+                      curIdx.x * gridSpacing, curIdx.y * gridSpacing); }
+
     return ln;
 }
 
@@ -198,6 +200,10 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells, std::vector<An
         layerTypeList1.push_back(lTypes);  //lTypes
         _cLines.push_back(ln);
     }
+
+    // detection is at least four points
+    // only when isTracingDone == true
+    // DetectStraightLines(std::vector<CornerCase> ccs)
 
 
     // refine lines

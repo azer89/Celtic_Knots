@@ -35,7 +35,6 @@ private:
     // draw cells
     TilePainter* _tilePainter;
 
-
     // draw
     AnIndex                     _drawStartIndex;
     AnIndex                     _drawEndIndex;
@@ -94,9 +93,10 @@ private:
     void PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
 
     AnIndex GetIndex(AVector vec);
-    bool DoesHitAWall(AnIndex idx);
-    bool IsACorner(AnIndex idx);
+    //bool DoesHitAWall(AnIndex idx);
+    //bool IsACorner(AnIndex idx);
     bool IsValid(AnIndex idx);
+    void CalculateNarrowPath();
 
 protected:
     // qt event
@@ -118,6 +118,8 @@ public:
     QSize GetCanvasSize() { return QSize(_img_width, _img_height); }
 
     LineType GetLineIntersection(AVector pt);
+    bool IntersectHorizontalLine(AVector pt);
+    bool IntersectVerticalLine(AVector pt);
 
     void UndoBreakMarkers();
     void InitCells();

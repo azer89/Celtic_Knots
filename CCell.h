@@ -11,12 +11,22 @@ enum CellSign
     SIGN_EMPTY = 2,
 };
 
+enum Straightness
+{
+    ST_VERTICAL   = 0,
+    ST_HORIZONTAL = 1,
+    ST_DIAGONAL   = 2,
+};
+
 struct CCell
 {
 public:
     CellSign _cellSign;
     DirectionType _directionType;
     bool _isVisited;
+
+    Straightness _straightness;     // am I straight in a narrow path ?
+    DirectionType _tempDirection;   // go straight then turn
 
     CCell()
     {

@@ -58,12 +58,8 @@ void GLContainer::UpdateViewport(bool putInMiddle)
     float zoomFactor = _glWidget->GetZoomFactor();
     QSize canvasSize  = _glWidget->GetCanvasSize();
 
-    //QSize borderLimit( 10, 10);
-
     int img_width =	canvasSize.width()  * zoomFactor;
     int img_height = canvasSize.height() * zoomFactor;
-
-    //std::cout << img_width << " " << img_height << "\n";
 
     if(img_width == 0 || img_height == 0)
     {
@@ -195,7 +191,7 @@ void GLContainer::SetScrolls()
 
     _prevZoomFactor = 1.0f;
 
-    std::cout << "SetScrolls\n";
+    //std::cout << "SetScrolls\n";
 
     // nasty code here...
     bool shouldZoom = true;
