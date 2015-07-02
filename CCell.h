@@ -33,6 +33,9 @@ public:
         this->_cellSign = SIGN_EMPTY;
         this->_directionType = DirectionType::DIR_NONE;
         this->_isVisited = false;
+        this->_straightness = Straightness::ST_DIAGONAL;
+        this->_tempDirection = DirectionType::DIR_NONE;
+
     }
 };
 
