@@ -291,6 +291,15 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
         float normalFactor = 0.5;
 
+
+        // fix me: nasty code
+        if(curI == 0 && ccs[prevI] == CornerCase::COR_STRAIGHT)
+        {
+            ALine prevLine = tempLines1[prevI];
+            _cLines[curI].XA = prevLine.XB;
+            _cLines[curI].YA = prevLine.YB;
+        }
+
         // old code
         if(ccs[a] == CornerCase::COR_START)
         {
