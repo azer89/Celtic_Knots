@@ -102,6 +102,10 @@ private:
     QOpenGLVertexArrayObject    _cLinesVao;
     std::vector<ALine>          _cLines;
 
+    QOpenGLBuffer               _anchorLinesVbo;
+    QOpenGLVertexArrayObject    _anchorLinesVao;
+    std::vector<ALine>          _anchorLines;
+
     QOpenGLBuffer               _uLinesVbo;
     QOpenGLVertexArrayObject    _uLinesVao;
 

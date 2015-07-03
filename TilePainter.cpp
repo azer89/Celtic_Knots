@@ -382,7 +382,11 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
     {
         _urSegments.clear();
         _orSegments.clear();
+        _anchorLines,clearenv();
         _points.clear();
+
+        std::vector<std::pair<AVector, AVector>> anchors;
+        // init
         for(size_t a = 0; a < _cLines.size(); a++)
         {
             int curIdx = a;
@@ -402,12 +406,95 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
             float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
 
+            CornerCase cCase = ccs[curIdx];
+            if(cCase == CornerCase::COR_STRAIGHT)
+            {
+                anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0;
+                anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0;
+            }
+
+            if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
+            if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
+
+            //if(angle1 <= 0.15 && angle2 <= 0.15)
+            //{
+            //    ccs[curIdx] = CornerCase::COR_STRAIGHT;
+            //}
+
+            std::pair<AVector, AVector> pAnchors(anchor1, anchor2);
+            anchors.push_back(pAnchors);
+        }
+
+        // refine anchors (more straight)
+        /*
+        for(size_t a = 0; a < _cLines.size(); a++)
+        {
+            int curIdx = a;
+            int prevIdx = a - 1;
+            int nextIdx = (a + 1) % _cLines.size();
+
+            if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
+
+            AVector pt2 = _cLines[curIdx].GetPointA();
+            AVector pt3 = _cLines[curIdx].GetPointB();
+
+            //AVector anchor1 = anchors[a].first;
+            //AVector anchor2 = anchors[a].second;
+
+            if(ccs[nextIdx] == CornerCase::COR_STRAIGHT)
+                { anchors[a].second = pt3 + (pt2 - pt3).Norm() * 1.0; }
+
+            if(ccs[prevIdx] == CornerCase::COR_STRAIGHT)
+                { anchors[a].first = pt2 + (pt3 - pt2).Norm() * 1.0; }
+        }
+        */
+
+
+        for(size_t a = 0; a < _cLines.size(); a++)
+        {
+            /*
+            int curIdx = a;
+            int prevIdx = a - 1;
+            int nextIdx = (a + 1) % _cLines.size();
+
+            if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
+
+            AVector pt1 = _cLines[prevIdx].GetPointA();
+            AVector pt2 = _cLines[curIdx].GetPointA();
+            AVector pt3 = _cLines[curIdx].GetPointB();
+            AVector pt4 = _cLines[nextIdx].GetPointB();
+
+            AVector anchor1, anchor2;
+            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);*/
+
+            int curIdx = a;
+            int prevIdx = a - 1;
+            int nextIdx = (a + 1) % _cLines.size();
+
+            if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
+
+            AVector pt2 = _cLines[curIdx].GetPointA();
+            AVector pt3 = _cLines[curIdx].GetPointB();
+            AVector anchor1 = anchors[a].first;
+            AVector anchor2 = anchors[a].second;
+
+            //float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
+            //float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
+
             // layer types
             std::pair<LayerType, LayerType> lTypes = layerTypeList1[curIdx];
 
-            std::cout << "angles " << angle1 << " " << angle2 << "\n";
-            if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
-            if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
+//            CornerCase cCase = ccs[curIdx];
+//            if(cCase == CornerCase::COR_STRAIGHT)
+//            {
+//                anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0;
+//                anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0;
+//            }
+
+            // didn't work ???
+            //std::cout << "angles " << angle1 << " " << angle2 << "\n";
+            //if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
+            //if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
 
             RibbonSegment segment1;
             RibbonSegment segment2;
@@ -415,6 +502,10 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             std::vector<AVector> segmentPoints2;
 
             GeTwoSegments(pt2, anchor1, anchor2, pt3, &segment1, &segment2);
+
+            // debug (please delete)
+            _anchorLines.push_back(ALine(pt2, anchor1));
+            _anchorLines.push_back(ALine(pt3, anchor2));
 
             CurveInterpolation::DeCasteljau(segmentPoints1, segment1._startMPt, segment1._anchor1, segment1._anchor2, segment1._endMPt, 1.0f);
             CurveInterpolation::DeCasteljau(segmentPoints2, segment2._startMPt, segment2._anchor1, segment2._anchor2, segment2._endMPt, 1.0f);
@@ -480,7 +571,8 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
         std::cout << "layerTypeList2.size() " << layerTypeList2.size() << "\n";
         std::rotate(layerTypeList2.begin(), layerTypeList2.begin() + 1, layerTypeList2.end());  // move first to the end
         CalculateOverUnderRibbon(_cLines, layerTypeList2);
-        //PrepareLinesVAO2(_cLines, &_cLinesVbo, &_cLinesVao, layerTypeList2);
+        PrepareLinesVAO2(_cLines, &_cLinesVbo, &_cLinesVao, layerTypeList2);
+        PrepareLinesVAO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(1.0, 0.0, 0.0));
     }
     else
     {
@@ -793,6 +885,7 @@ void TilePainter::PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* line
 
 void TilePainter::DrawTiles()
 {
+
     if(_uQuadsVao.isCreated())
     {
         _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
@@ -835,6 +928,15 @@ void TilePainter::DrawTiles()
         _cLinesVao.bind();
         glDrawArrays(GL_LINES, 0, _cLines.size() * 2);
         _cLinesVao.release();
+    }
+
+    if(_anchorLinesVao.isCreated())
+    {
+        _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
+        glLineWidth(2.0f);
+        _anchorLinesVao.bind();
+        glDrawArrays(GL_LINES, 0, _cLines.size() * 2);
+        _anchorLinesVao.release();
     }
 
     /*
