@@ -23,7 +23,8 @@ enum CornerCase
     COR_END = 3,
     COR_START_STRAIGHT = 4,
     COR_END_STRAIGHT = 5,
-    COR_STRAIGHT = 6,
+    COR_MIDDLE_STRAIGHT = 6,
+    COR_STRAIGHT = 7,
 };
 
 class TilePainter

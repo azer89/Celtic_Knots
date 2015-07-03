@@ -82,7 +82,13 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
 
 
         // new code
-        if(nextC._straightness != Straightness::ST_DIAGONAL &&
+        if(nextC._straightness  != Straightness::ST_DIAGONAL &&
+           curC._straightness   == Straightness::ST_DIAGONAL &&
+           prevC._straightness  != Straightness::ST_DIAGONAL)
+        {
+            return CornerCase::COR_MIDDLE_STRAIGHT;
+        }
+        else if(nextC._straightness != Straightness::ST_DIAGONAL &&
            curC._straightness  == Straightness::ST_DIAGONAL)
         {
             return CornerCase::COR_START_STRAIGHT;
@@ -221,6 +227,7 @@ ALine TilePainter::GetLineInACell(CCell curCel, float gridSpacing, AnIndex curId
     }
 
 
+
     return ln;
 }
 
@@ -303,6 +310,10 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             _cLines[curI].YB += offsetVec2.y * normalFactor;
         }
 
+        // TODO
+        // if nextI is COR_START_STRAIGHT
+        // if prevI is COR_END_STRAIGHT
+
         else if(ccs[a] == CornerCase::COR_START_STRAIGHT)
         {
             //std::cout << "COR_START_STRAIGHT\n";
@@ -331,14 +342,23 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             _cLines[curI].XB += offsetVec2.x * normalFactor;
             _cLines[curI].YB += offsetVec2.y * normalFactor;
         }
-        else if(ccs[a] == CornerCase::COR_STRAIGHT)
+        else if(ccs[a] == CornerCase::COR_MIDDLE_STRAIGHT)
         {
-            //std::cout << "COR_STRAIGHT\n";
-            //_cLines[curI].XA += offsetVec1.x * normalFactor;
-            //_cLines[curI].YA += offsetVec1.y * normalFactor;
-            //_cLines[curI].XB += offsetVec2.x * normalFactor;
-            //_cLines[curI].YB += offsetVec2.y * normalFactor;
+            if(nextI != 0)
+            {
+                ALine nextLine = tempLines1[nextI];
+                _cLines[curI].XB = nextLine.XA;
+                _cLines[curI].YB = nextLine.YA;
+            }
+
+            if(prevI != tempLines1.size() - 1)
+            {
+                ALine prevLine = tempLines1[prevI];
+                _cLines[curI].XA = prevLine.XB;
+                _cLines[curI].YA = prevLine.YB;
+            }
         }
+        //COR_MIDDLE_STRAIGHT
 
 
         // end code
@@ -355,6 +375,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             _cLines[curI].YA = tempLines1[curI].YA;
         }
     }
+
 
     // bezier curves
     if(isTracingDone)
@@ -384,8 +405,9 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             // layer types
             std::pair<LayerType, LayerType> lTypes = layerTypeList1[curIdx];
 
-            if(angle1 <= 0.13) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
-            if(angle2 <= 0.13) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
+            std::cout << "angles " << angle1 << " " << angle2 << "\n";
+            if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
+            if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
 
             RibbonSegment segment1;
             RibbonSegment segment2;
