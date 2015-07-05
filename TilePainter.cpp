@@ -17,25 +17,6 @@ TilePainter::~TilePainter()
 
 CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cells, std::vector<AnIndex> traceList, bool isTracingDone)
 {
-    /*
-    for(int a = 0; a < traceList.size(); a++)
-    {
-        CCell cell = cells[traceList[a].x][traceList[a].y];
-        DirectionType dType = cell._directionType;
-
-        if(dType == DirectionType::DIR_DOWNLEFT || dType == DirectionType::DIR_UPRIGHT)
-        {
-            std::cout << " / ";
-        }
-        else
-        {
-            std::cout << " \\ ";
-        }
-    }
-    std::cout << "\n";
-    */
-
-    //AnIndex curIdx = traceList[i];
     if(traceList.size() == 1)
     {
         // nothing
@@ -47,13 +28,9 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
         bool changeDir = c1._directionType != c2._directionType;
 
         if(i == 0 && changeDir )  // start ?
-        {
-            return CornerCase::COR_START;
-        }
+            { return CornerCase::COR_START; }
         else if(i == 1 && changeDir) // end ?
-        {
-            return CornerCase::COR_END;
-        }
+            { return CornerCase::COR_END; }
     }
     else if(traceList.size() >= 3)
     {
@@ -75,10 +52,6 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
         CCell prevC = cells[traceList[prevI].x][traceList[prevI].y];
         CCell curC = cells[traceList[curI].x][traceList[curI].y];
         CCell nextC = cells[traceList[nextI].x][traceList[nextI].y];
-
-        //COR_START_STRAIGHT
-        //CornerCase::COR_END_STRAIGHT
-        //CornerCase::COR_STRAIGHT
 
 
         // new code
@@ -1032,40 +1005,3 @@ void TilePainter::GetSegmentPoints(ALine curLine, ALine prevLine, ALine nextLine
     *pC = p1 + d1Left;
     *pD = p1 + d1Right;
 }
-
-//void TilePainter::CreateCorner(CCell cell, AnIndex idx, float gridSpacing)
-//{
-//}
-
-//void TilePainter::CreateCross(CCell cell, AnIndex idx, float gridSpacing)
-//{
-//}
-
-//void TilePainter::CreateSlash(CCell cell, AnIndex idx, float gridSpacing)
-//{
-//}
-
-//void TilePainter::CreateStraight(CCell cell, AnIndex idx, float gridSpacing)
-//{
-//}
-
-/*
-AVector TilePainter::RotatePoint(float cx,float cy,float angle, AVector p)
-{
-    float s = sin(angle);
-    float c = cos(angle);
-
-    // translate point back to origin:
-    p.x -= cx;
-    p.y -= cy;
-
-    // rotate point
-    float xnew = p.x * c - p.y * s;
-    float ynew = p.x * s + p.y * c;
-
-    // translate point back:
-    p.x = xnew + cx;
-    p.y = ynew + cy;
-    return p;
-}
-*/

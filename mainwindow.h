@@ -28,6 +28,7 @@ private slots:
     void GenerateAKnot();
     void CheckBoxesTriggered();
     void DimensionChanged();
+    void Reset();
 };
 
 #endif // MAINWINDOW_H
