@@ -263,6 +263,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
                                             tempLines1[nextI].GetPointB());
 
         float normalFactor = 0.5;
+        //float normalFactor = 0.8;
 
 
         // fix me: nasty code
@@ -383,6 +384,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             AVector pt4 = _cLines[nextIdx].GetPointB();
 
             AVector anchor1, anchor2;
+            //CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
             CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
 
             float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
@@ -880,7 +882,7 @@ void TilePainter::DrawTiles()
     {
         _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
         _uLinesVao.bind();
-        glLineWidth(4.0f);
+        glLineWidth(6.0f);
         glDrawArrays(GL_LINES, 0, _urLines.size() * 4);
         _uLinesVao.release();
     }
@@ -897,7 +899,7 @@ void TilePainter::DrawTiles()
     {
         _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
         _oLinesVao.bind();
-        glLineWidth(4.0f);
+        glLineWidth(6.0f);
         glDrawArrays(GL_LINES, 0, _orLines.size() * 4);
         _oLinesVao.release();
     }
