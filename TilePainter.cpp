@@ -427,10 +427,26 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
             AVector anchor1, anchor2;
             //CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
-            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.7);
+            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.9);
+
+            /*
+            // (Bx-Ax)*(Y-Ay) - (By-Ay)*(X-Ax)
+            float val1 = (pt3.x - pt2.x) * (anchor1.y - pt2.y) - (pt3.y - pt2.y) * (anchor1.x - pt2.x);
+            float val2 = (pt3.x - pt2.x) * (anchor2.y - pt2.y) - (pt3.y - pt2.y) * (anchor2.x - pt2.x);
+
+            if((val1 < 0 && val2 > 0) || (val2 < 0 && val1 > 0))
+            {
+                anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0;
+                anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0;
+            }*/
+
+
+            // code to fix anchor points
+
 
             float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
             float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
+
 
             CornerCase cCase = ccs[curIdx];
             if(cCase == CornerCase::COR_STRAIGHT)
@@ -439,8 +455,21 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
                 anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0;
             }
 
+
+            if(DistanceToFiniteLine(pt2, pt3, anchor1) < 0.01)
+            {
+                anchor1 = pt2;
+                std::cout << "ok1\n";
+            }
+            if(DistanceToFiniteLine(pt2, pt3, anchor2) < 0.01)
+            {
+                anchor2 = pt3;
+                std::cout << "ok2\n";
+            }
+
             if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
             if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
+
 
             //if(angle1 <= 0.15 && angle2 <= 0.15)
             //{
@@ -478,21 +507,6 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
         for(size_t a = 0; a < _cLines.size(); a++)
         {
-            /*
-            int curIdx = a;
-            int prevIdx = a - 1;
-            int nextIdx = (a + 1) % _cLines.size();
-
-            if(curIdx == 0) { prevIdx = _cLines.size() - 1; }
-
-            AVector pt1 = _cLines[prevIdx].GetPointA();
-            AVector pt2 = _cLines[curIdx].GetPointA();
-            AVector pt3 = _cLines[curIdx].GetPointB();
-            AVector pt4 = _cLines[nextIdx].GetPointB();
-
-            AVector anchor1, anchor2;
-            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);*/
-
             int curIdx = a;
             int prevIdx = a - 1;
             int nextIdx = (a + 1) % _cLines.size();
@@ -504,23 +518,26 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             AVector anchor1 = anchors[a].first;
             AVector anchor2 = anchors[a].second;
 
-            //float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
-            //float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
-
             // layer types
             std::pair<LayerType, LayerType> lTypes = layerTypeList1[curIdx];
 
-//            CornerCase cCase = ccs[curIdx];
-//            if(cCase == CornerCase::COR_STRAIGHT)
-//            {
-//                anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0;
-//                anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0;
-//            }
+            /*
+            CornerCase cCase = ccs[curIdx];
+            if(cCase == CornerCase::COR_STRAIGHT)
+            {
+                anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0;
+                anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0;
+            }
+            */
 
+            /*
             // didn't work ???
-            //std::cout << "angles " << angle1 << " " << angle2 << "\n";
-            //if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
-            //if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
+            float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
+            float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
+            std::cout << "angles " << angle1 << " " << angle2 << "\n";
+            if(angle1 <= 0.15) { anchor1 = pt2 + (pt3 - pt2).Norm() * 1.0; }
+            if(angle2 <= 0.15) { anchor2 = pt3 + (pt2 - pt3).Norm() * 1.0; }
+            */
 
             RibbonSegment segment1;
             RibbonSegment segment2;
@@ -575,7 +592,6 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             }
         }
 
-
         //to do: uncomment this
         _cLines.clear();
         for(size_t a = 0; a < _points.size(); a++)
@@ -586,14 +602,6 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
         }
 
     }
-
-
-    //if(isTracingDone)
-    //if(false)
-    //{
-        //_uQuadsSize = PrepareQuadsVAO(_urSegments, &_uQuadsVbo, &_uQuadsVao, QVector3D(0, 0, 1));
-        //_oQuadsSize = PrepareQuadsVAO(_orSegments, &_oQuadsVbo, &_oQuadsVao, QVector3D(1, 0, 0));
-    //}
 
     if(isTracingDone)
     //if(false)
@@ -610,7 +618,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
         PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
         //if(isTracingDone)
         //{
-        //    PrepareLinesVAO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(1.0, 0.0, 0.0));
+        //    PrepareLinesVAO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(0.0, 0.0, 1.0));
         //}
     }
 }
@@ -920,6 +928,15 @@ void TilePainter::PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* line
 
 void TilePainter::DrawTiles()
 {
+    /*
+    if(_anchorLinesVao.isCreated())
+    {
+        _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
+        glLineWidth(2.0f);
+        _anchorLinesVao.bind();
+        glDrawArrays(GL_LINES, 0, _cLines.size() * 2);
+        _anchorLinesVao.release();
+    }*/
 
     if(_uQuadsVao.isCreated())
     {
@@ -965,14 +982,7 @@ void TilePainter::DrawTiles()
         _cLinesVao.release();
     }
 
-    if(_anchorLinesVao.isCreated())
-    {
-        _shaderProgram->setUniformValue(_use_color_location, (GLfloat)1.0);
-        glLineWidth(2.0f);
-        _anchorLinesVao.bind();
-        glDrawArrays(GL_LINES, 0, _cLines.size() * 2);
-        _anchorLinesVao.release();
-    }
+
 
     /*
     if(_rLinesVao.isCreated())
@@ -1057,4 +1067,16 @@ void TilePainter::GetSegmentPoints(ALine curLine, ALine prevLine, ALine nextLine
     *pB = p0 + d0Right;
     *pC = p1 + d1Left;
     *pD = p1 + d1Right;
+}
+
+double TilePainter::DistanceToFiniteLine(AVector v, AVector w, AVector p)
+{
+    float eps_val = std::numeric_limits<float>::epsilon() * 1000;
+    double l2 = v.DistanceSquared(w);
+    if (l2 > -eps_val && l2 < eps_val) return p.Distance(v);
+    double t = (p - v).Dot(w - v) / l2;
+    if (t < 0.0)	  { return  p.Distance(v); }
+    else if (t > 1.0) { return  p.Distance(w); }
+    AVector projection = v + (w - v) * t;
+    return p.Distance(projection);
 }

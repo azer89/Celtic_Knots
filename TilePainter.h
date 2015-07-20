@@ -73,21 +73,13 @@ private:
     //void CreateSlash(CCell cell, AnIndex idx, float gridSpacing);
     //void CreateStraight(CCell cell, AnIndex idx, float gridSpacing);
 
+    double DistanceToFiniteLine(AVector v, AVector w, AVector p);
+
 private:
 
     // over under
     std::vector<RibbonSegment>  _urSegments;    // under
     std::vector<RibbonSegment>  _orSegments;    // over
-
-    // under, left and right
-    //std::vector<ALine>          _uLines;
-    //QOpenGLBuffer               _uLinesVbo;
-    //QOpenGLVertexArrayObject    _uLinesVao;
-
-    // over, left and right
-    //std::vector<ALine>          _oLines;
-    //QOpenGLBuffer               _oLinesVbo;
-    //QOpenGLVertexArrayObject    _oLinesVao;
 
     std::vector<ALine> _urLines;
     std::vector<ALine> _ulLines;
@@ -113,14 +105,6 @@ private:
 
     QOpenGLBuffer               _oLinesVbo;
     QOpenGLVertexArrayObject    _oLinesVao;
-
-    //QOpenGLBuffer               _rLinesVbo;
-    //QOpenGLVertexArrayObject    _rLinesVao;
-    //std::vector<ALine>          _rLines;
-
-    //QOpenGLBuffer               _lLinesVbo;
-    //QOpenGLVertexArrayObject    _lLinesVao;
-    //std::vector<ALine>          _lLines;
 
     QOpenGLBuffer               _debugPointsVbo;
     QOpenGLVertexArrayObject    _debugPointsVao;

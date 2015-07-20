@@ -397,7 +397,6 @@ void GLWidget::GenerateAKnot()
 
 void GLWidget::CalculateNarrowPath()
 {
-    // -1 don't calculate border
     for(int b = 0; b < _actualGridSize.height() - 1; b++)
     {
         for(int a = 0; a < _actualGridSize.width() - 1; a++)
