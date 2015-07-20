@@ -413,6 +413,7 @@ void GLWidget::CalculateNarrowPath()
                IntersectHorizontalLine(drVec)   )
             {
                 _cells[a][b]._straightness = Straightness::ST_HORIZONTAL;
+                std::cout << "-";
             }
             // vertical
             else if(IntersectVerticalLine(curVec) &&
@@ -421,13 +422,19 @@ void GLWidget::CalculateNarrowPath()
                     IntersectVerticalLine(drVec))
             {
                 _cells[a][b]._straightness = Straightness::ST_VERTICAL;
+                std::cout << "|";
             }
             else
             {
                 _cells[a][b]._straightness = Straightness::ST_DIAGONAL;
+                std::cout << ".";
             }
         }
+        std::cout << "\n";
     }
+
+    std::cout << "\n";
+    std::cout << "\n";
 }
 
 void GLWidget::TraceOneStep()
