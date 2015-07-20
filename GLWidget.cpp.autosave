@@ -483,7 +483,7 @@ void GLWidget::TraceOneStep()
            IsValid(rIdx) &&
            _cells[rIdx.x][rIdx.y]._straightness == Straightness::ST_HORIZONTAL)
         {
-            std::cout << "[a] " << "right --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
+            //std::cout << "[a] " << "right --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
             _traceList.push_back(rIdx);
             _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_RIGHT;
             _cells[rIdx.x][rIdx.y]._tempDirection = _cells[curIdx.x][curIdx.y]._tempDirection;
@@ -492,7 +492,7 @@ void GLWidget::TraceOneStep()
                 IsValid(lIdx) &&
                 _cells[lIdx.x][lIdx.y]._straightness == Straightness::ST_HORIZONTAL)
         {
-            std::cout << "[b] " << "left --> left" << " - " << lIdx.x << " " << lIdx.y << "\n";
+            //std::cout << "[b] " << "left --> left" << " - " << lIdx.x << " " << lIdx.y << "\n";
             _traceList.push_back(lIdx);
             _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_LEFT;
             _cells[lIdx.x][lIdx.y]._tempDirection = _cells[curIdx.x][curIdx.y]._tempDirection;
@@ -501,7 +501,7 @@ void GLWidget::TraceOneStep()
                 IsValid(uIdx) &&
                 _cells[uIdx.x][uIdx.y]._straightness == Straightness::ST_VERTICAL)
         {
-            std::cout << "[c] " << "up --> up" << " - " << uIdx.x << " " << uIdx.y << "\n";
+            //std::cout << "[c] " << "up --> up" << " - " << uIdx.x << " " << uIdx.y << "\n";
             _traceList.push_back(uIdx);
             _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UP;
             _cells[uIdx.x][uIdx.y]._tempDirection = _cells[curIdx.x][curIdx.y]._tempDirection;
@@ -510,7 +510,7 @@ void GLWidget::TraceOneStep()
                 IsValid(dIdx) &&
                 _cells[dIdx.x][dIdx.y]._straightness == Straightness::ST_VERTICAL)
         {
-            std::cout << "[d] " << "down --> down" << " - " << dIdx.x << " " << dIdx.y << "\n";
+            //std::cout << "[d] " << "down --> down" << " - " << dIdx.x << " " << dIdx.y << "\n";
             _traceList.push_back(dIdx);
             _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWN;
             _cells[dIdx.x][dIdx.y]._tempDirection = _cells[curIdx.x][curIdx.y]._tempDirection;
@@ -521,7 +521,7 @@ void GLWidget::TraceOneStep()
            IsValid(rIdx) &&
            _cells[rIdx.x][rIdx.y]._straightness == Straightness::ST_DIAGONAL)
         {
-            std::cout << "[e] " << "right --> out" << " - " << rIdx.x << " " << rIdx.y << "\n";
+            //std::cout << "[e] " << "right --> out" << " - " << rIdx.x << " " << rIdx.y << "\n";
             _traceList.push_back(rIdx);
             _cells[rIdx.x][rIdx.y]._directionType = _cells[curIdx.x][curIdx.y]._tempDirection;
         }
@@ -529,7 +529,7 @@ void GLWidget::TraceOneStep()
                 IsValid(lIdx) &&
                 _cells[lIdx.x][lIdx.y]._straightness == Straightness::ST_DIAGONAL)
         {
-            std::cout << "[f] " << "left --> out" << " - " << lIdx.x << " " << lIdx.y << "\n";
+            //std::cout << "[f] " << "left --> out" << " - " << lIdx.x << " " << lIdx.y << "\n";
             _traceList.push_back(lIdx);
             _cells[lIdx.x][lIdx.y]._directionType = _cells[curIdx.x][curIdx.y]._tempDirection;
         }
@@ -537,7 +537,7 @@ void GLWidget::TraceOneStep()
                 IsValid(uIdx) &&
                 _cells[uIdx.x][uIdx.y]._straightness == Straightness::ST_DIAGONAL)
         {
-            std::cout << "[g] " << "up --> out" << " - " << uIdx.x << " " << uIdx.y << "\n";
+            //std::cout << "[g] " << "up --> out" << " - " << uIdx.x << " " << uIdx.y << "\n";
             _traceList.push_back(uIdx);
             _cells[uIdx.x][uIdx.y]._directionType = _cells[curIdx.x][curIdx.y]._tempDirection;
         }
@@ -545,7 +545,7 @@ void GLWidget::TraceOneStep()
                 IsValid(dIdx) &&
                 _cells[dIdx.x][dIdx.y]._straightness == Straightness::ST_DIAGONAL)
         {
-            std::cout << "[h] " << "down --> out" << " - " << dIdx.x << " " << dIdx.y << "\n";
+            //std::cout << "[h] " << "down --> out" << " - " << dIdx.x << " " << dIdx.y << "\n";
             _traceList.push_back(dIdx);
             _cells[dIdx.x][dIdx.y]._directionType = _cells[curIdx.x][curIdx.y]._tempDirection;
         }
@@ -556,8 +556,7 @@ void GLWidget::TraceOneStep()
            _cells[rIdx.x][rIdx.y]._straightness == Straightness::ST_HORIZONTAL) // upright --> right
         {
 
-            std::cout << "[1] " << "upright --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
-
+            //std::cout << "[1] " << "upright --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
             // rIdx
             _traceList.push_back(rIdx);
             _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_RIGHT;
@@ -568,8 +567,7 @@ void GLWidget::TraceOneStep()
                 IsValid(rIdx) &&
                 _cells[rIdx.x][rIdx.y]._straightness == Straightness::ST_HORIZONTAL) // downright --> right
         {
-            std::cout << "[2] " << "downright --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
-
+            //std::cout << "[2] " << "downright --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
             // rIdx
             _traceList.push_back(rIdx);
             _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_RIGHT;
@@ -580,8 +578,7 @@ void GLWidget::TraceOneStep()
                 IsValid(lIdx) &&
                 _cells[lIdx.x][lIdx.y]._straightness == Straightness::ST_HORIZONTAL) // downleft --> left
         {
-            std::cout << "[3] " << "downleft --> left" << " - " << lIdx.x << " " << lIdx.y << "\n";
-
+            //std::cout << "[3] " << "downleft --> left" << " - " << lIdx.x << " " << lIdx.y << "\n";
             // lIdx
             _traceList.push_back(lIdx);
             _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_LEFT;
@@ -592,8 +589,7 @@ void GLWidget::TraceOneStep()
                 IsValid(lIdx) &&
                 _cells[lIdx.x][lIdx.y]._straightness == Straightness::ST_HORIZONTAL)    // upleft --> left
         {
-            std::cout << "[4] " << "// upleft --> left" << " - " << lIdx.x << " " << lIdx.y << "\n";
-
+            //std::cout << "[4] " << "// upleft --> left" << " - " << lIdx.x << " " << lIdx.y << "\n";
             // lIdx
             _traceList.push_back(lIdx);
             _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_LEFT;
@@ -605,8 +601,7 @@ void GLWidget::TraceOneStep()
                 IsValid(uIdx) &&
                 _cells[uIdx.x][uIdx.y]._straightness == Straightness::ST_VERTICAL) // upright --> up
         {
-            std::cout << "[5] " << "upright --> up" << " - " << uIdx.x << " " << uIdx.y << "\n";
-
+            //std::cout << "[5] " << "upright --> up" << " - " << uIdx.x << " " << uIdx.y << "\n";
             // uIdx
             _traceList.push_back(uIdx);
             _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UP;
@@ -617,8 +612,7 @@ void GLWidget::TraceOneStep()
                 IsValid(dIdx) &&
                 _cells[dIdx.x][dIdx.y]._straightness == Straightness::ST_VERTICAL) // downright --> down
         {
-            std::cout << "[6] " << "downright --> down" << " - " << dIdx.x << " " << dIdx.y << "\n";
-
+            //std::cout << "[6] " << "downright --> down" << " - " << dIdx.x << " " << dIdx.y << "\n";
             // dIdx
             _traceList.push_back(dIdx);
             _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWN;
@@ -629,8 +623,7 @@ void GLWidget::TraceOneStep()
                 IsValid(dIdx) &&
                 _cells[dIdx.x][dIdx.y]._straightness == Straightness::ST_VERTICAL) // downleft --> down
         {
-            std::cout << "[7] " << "downleft --> down" << " - " << dIdx.x << " " << dIdx.y << "\n";
-
+            //std::cout << "[7] " << "downleft --> down" << " - " << dIdx.x << " " << dIdx.y << "\n";
             // dIdx
             _traceList.push_back(dIdx);
             _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWN;
@@ -641,8 +634,7 @@ void GLWidget::TraceOneStep()
                 IsValid(uIdx) &&
                 _cells[uIdx.x][uIdx.y]._straightness == Straightness::ST_VERTICAL)    // upleft --> up
         {
-            std::cout << "[8] " << "upleft --> up" << " - " << uIdx.x << " " << uIdx.y << "\n";
-
+            //std::cout << "[8] " << "upleft --> up" << " - " << uIdx.x << " " << uIdx.y << "\n";
             // uIdx
             _traceList.push_back(uIdx);
             _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UP;
@@ -652,25 +644,25 @@ void GLWidget::TraceOneStep()
         // old code
         else if(curDir == DirectionType::DIR_UPRIGHT && IsValid(urIdx) && hitType == LineType::LINE_NONE)
         {
-            std::cout << "[9] " << hitType << " - " << urIdx.x << " " << urIdx.y << "\n";
+            //std::cout << "[9] " << hitType << " - " << urIdx.x << " " << urIdx.y << "\n";
             _traceList.push_back(urIdx);
             _cells[urIdx.x][urIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
         }
         else if(curDir == DirectionType::DIR_DOWNRIGHT && IsValid(drIdx) && hitType == LineType::LINE_NONE)
         {
-            std::cout << "[10] " << hitType << " - " << drIdx.x << " " << drIdx.y << "\n";
+            //std::cout << "[10] " << hitType << " - " << drIdx.x << " " << drIdx.y << "\n";
             _traceList.push_back(drIdx);
             _cells[drIdx.x][drIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
         }
         else if(curDir == DirectionType::DIR_DOWNLEFT && IsValid(dlIdx) && hitType == LineType::LINE_NONE)
         {
-            std::cout << "[11] " << hitType << " - " << dlIdx.x << " " << dlIdx.y << "\n";
+            //std::cout << "[11] " << hitType << " - " << dlIdx.x << " " << dlIdx.y << "\n";
             _traceList.push_back(dlIdx);
             _cells[dlIdx.x][dlIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
         }
         else if(curDir == DirectionType::DIR_UPLEFT && IsValid(ulIdx) && hitType == LineType::LINE_NONE)
         {
-            std::cout << "[12] " << hitType << " - " << ulIdx.x << " " << ulIdx.y << "\n";
+            //std::cout << "[12] " << hitType << " - " << ulIdx.x << " " << ulIdx.y << "\n";
             _traceList.push_back(ulIdx);
             _cells[ulIdx.x][ulIdx.y]._directionType = DirectionType::DIR_UPLEFT;
         }
@@ -678,13 +670,13 @@ void GLWidget::TraceOneStep()
         {
             if(hitType == LineType::LINE_HORIZONTAL && IsValid(rIdx))
             {
-                std::cout << "[13] " << hitType << " - " << rIdx.x << " " << rIdx.y << "\n";
+                //std::cout << "[13] " << hitType << " - " << rIdx.x << " " << rIdx.y << "\n";
                 _traceList.push_back(rIdx);
                 _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
             else
             {
-                std::cout << "[14] " << hitType << " - " << uIdx.x << " " << uIdx.y << "\n";
+                //std::cout << "[14] " << hitType << " - " << uIdx.x << " " << uIdx.y << "\n";
                 _traceList.push_back(uIdx);
                 _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
@@ -693,13 +685,13 @@ void GLWidget::TraceOneStep()
         {
             if(hitType == LineType::LINE_HORIZONTAL && IsValid(rIdx))
             {
-                std::cout << "[15] " << hitType << " - " << rIdx.x << " " << rIdx.y << "\n";
+                //std::cout << "[15] " << hitType << " - " << rIdx.x << " " << rIdx.y << "\n";
                 _traceList.push_back(rIdx);
                 _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
             }
             else
             {
-                std::cout << "[16] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
+                //std::cout << "[16] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
                 _traceList.push_back(dIdx);
                 _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
             }
@@ -708,13 +700,13 @@ void GLWidget::TraceOneStep()
         {
             if(hitType == LineType::LINE_HORIZONTAL && IsValid(lIdx))   // up left
             {
-                std::cout << "[17] " << hitType << " - " << lIdx.x << " " << lIdx.y << "\n";
+                //std::cout << "[17] " << hitType << " - " << lIdx.x << " " << lIdx.y << "\n";
                 _traceList.push_back(lIdx);
                 _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_UPLEFT;
             }
             else        // down right
             {
-                std::cout << "[18] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
+                //std::cout << "[18] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
                 _traceList.push_back(dIdx);
                 _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNRIGHT;
             }
@@ -723,13 +715,13 @@ void GLWidget::TraceOneStep()
         {
             if(hitType == LineType::LINE_HORIZONTAL && IsValid(lIdx))
             {
-                std::cout << "[19] " << hitType << " - " << lIdx.x << " " << lIdx.y << "\n";
+                //std::cout << "[19] " << hitType << " - " << lIdx.x << " " << lIdx.y << "\n";
                 _traceList.push_back(lIdx);
                 _cells[lIdx.x][lIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
             }
             else
             {
-                std::cout << "[20] " << hitType << " - " << uIdx.x << " " << uIdx.y << "\n";
+                //std::cout << "[20] " << hitType << " - " << uIdx.x << " " << uIdx.y << "\n";
                 _traceList.push_back(uIdx);
                 _cells[uIdx.x][uIdx.y]._directionType = DirectionType::DIR_UPRIGHT;
             }
@@ -739,7 +731,7 @@ void GLWidget::TraceOneStep()
         AnIndex nextIdx = _traceList[_traceList.size() - 1];
         if(_cells[nextIdx.x][nextIdx.y]._isVisited)
         {
-            std::cout << "end here " << nextIdx.x << " " << nextIdx.y << "\n";
+            //std::cout << "end here " << nextIdx.x << " " << nextIdx.y << "\n";
             _isTracingDone = true;
         }
 
