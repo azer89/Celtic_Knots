@@ -48,11 +48,9 @@ CornerCase TilePainter::GetCornerCase(int i, std::vector<std::vector<CCell>> cel
             nextI = 0;
         }
 
-
         CCell prevC = cells[traceList[prevI].x][traceList[prevI].y];
         CCell curC = cells[traceList[curI].x][traceList[curI].y];
         CCell nextC = cells[traceList[nextI].x][traceList[nextI].y];
-
 
         // new code
         if(nextC._straightness  != Straightness::ST_DIAGONAL &&
@@ -204,6 +202,119 @@ ALine TilePainter::GetLineInACell(CCell curCel, float gridSpacing, AnIndex curId
     return ln;
 }
 
+void TilePainter::RefineLines(std::vector<ALine>& lines, std::vector<CornerCase> ccs,  bool isTracingDone)
+{
+    std::vector<ALine> tempLines1(lines);
+    for(size_t a = 0; a < lines.size() && lines.size() > 1; a++)
+    {
+        size_t curI = a;
+        size_t prevI = a - 1;
+        size_t nextI = (a + 1) % lines.size();
+        if(curI == 0) { prevI = lines.size() - 1; }
+
+
+        AVector offsetVec1 = GetMiddlePoint(tempLines1[prevI].GetPointA(),
+                                            tempLines1[curI].GetPointA(),
+                                            tempLines1[curI].GetPointB());
+
+        AVector offsetVec2 = GetMiddlePoint(tempLines1[curI].GetPointA(),
+                                            tempLines1[curI].GetPointB(),
+                                            tempLines1[nextI].GetPointB());
+
+
+        float normalFactor = 1.0;
+        //float normalFactor = 0.8;
+
+
+        // fix me: nasty code
+        if(curI == 0 && ccs[prevI] == CornerCase::COR_STRAIGHT)
+        {
+            ALine prevLine = tempLines1[prevI];
+            lines[curI].XA = prevLine.XB;
+            lines[curI].YA = prevLine.YB;
+        }
+
+        // old code
+        if(ccs[a] == CornerCase::COR_START)
+        {
+            lines[curI].XB += offsetVec2.x * normalFactor;
+            lines[curI].YB += offsetVec2.y * normalFactor;
+        }
+        else if(ccs[a] == CornerCase::COR_END)
+        {
+            lines[curI].XA += offsetVec1.x * normalFactor;
+            lines[curI].YA += offsetVec1.y * normalFactor;
+        }
+        else if(ccs[a] == CornerCase::COR_MIDDLE)
+        {
+            lines[curI].XA += offsetVec1.x * normalFactor;
+            lines[curI].YA += offsetVec1.y * normalFactor;
+            lines[curI].XB += offsetVec2.x * normalFactor;
+            lines[curI].YB += offsetVec2.y * normalFactor;
+        }
+
+        // to do:
+        // if nextI is COR_START_STRAIGHT
+        // if prevI is COR_END_STRAIGHT
+
+        else if(ccs[a] == CornerCase::COR_START_STRAIGHT)
+        {
+            lines[curI].XA += offsetVec1.x * normalFactor;
+            lines[curI].YA += offsetVec1.y * normalFactor;
+
+            if(nextI != 0)
+            {
+                ALine nextLine = tempLines1[nextI];
+                lines[curI].XB = nextLine.XA;
+                lines[curI].YB = nextLine.YA;
+            }
+        }
+        else if(ccs[a] == CornerCase::COR_END_STRAIGHT)
+        {
+            if(prevI != tempLines1.size() - 1)
+            {
+                ALine prevLine = tempLines1[prevI];
+                lines[curI].XA = prevLine.XB;
+                lines[curI].YA = prevLine.YB;
+            }
+
+            lines[curI].XB += offsetVec2.x * normalFactor;
+            lines[curI].YB += offsetVec2.y * normalFactor;
+        }
+        else if(ccs[a] == CornerCase::COR_MIDDLE_STRAIGHT)
+        {
+            if(nextI != 0)
+            {
+                ALine nextLine = tempLines1[nextI];
+                lines[curI].XB = nextLine.XA;
+                lines[curI].YB = nextLine.YA;
+            }
+
+            if(prevI != tempLines1.size() - 1)
+            {
+                ALine prevLine = tempLines1[prevI];
+                lines[curI].XA = prevLine.XB;
+                lines[curI].YA = prevLine.YB;
+            }
+        }
+        //COR_MIDDLE_STRAIGHT
+
+
+        // end code
+        if(curI == lines.size() - 1 && !isTracingDone)
+        {
+            lines[curI].XB = tempLines1[curI].XB;
+            lines[curI].YB = tempLines1[curI].YB;
+        }
+
+        if(curI == 0 && !isTracingDone)
+        {
+            lines[curI].XA = tempLines1[curI].XA;
+            lines[curI].YA = tempLines1[curI].YA;
+        }
+    }
+}
+
 
 void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
                            std::vector<AnIndex> traceList,
@@ -211,6 +322,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
                            bool isTracingDone)
 {
     _cLines.clear();
+
     std::vector<std::pair<LayerType, LayerType>> layerTypeList1;
     std::vector<LayerType> layerTypeList2;
     std::vector<CornerCase> ccs;
@@ -247,114 +359,8 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
     // DetectStraightLines(std::vector<CornerCase> ccs)
 
     // refine lines
+    RefineLines(_cLines, ccs, isTracingDone);
 
-    std::vector<ALine> tempLines1(_cLines);
-    for(size_t a = 0; a < _cLines.size() && _cLines.size() > 1; a++)
-    {
-        size_t curI = a;
-        size_t prevI = a - 1;
-        size_t nextI = (a + 1) % _cLines.size();
-        if(curI == 0) { prevI = _cLines.size() - 1; }
-
-        AVector offsetVec1 = GetMiddlePoint(tempLines1[prevI].GetPointA(),
-                                            tempLines1[curI].GetPointA(),
-                                            tempLines1[curI].GetPointB());
-
-        AVector offsetVec2 = GetMiddlePoint(tempLines1[curI].GetPointA(),
-                                            tempLines1[curI].GetPointB(),
-                                            tempLines1[nextI].GetPointB());
-
-        float normalFactor = 0.5;
-        //float normalFactor = 0.8;
-
-
-        // fix me: nasty code
-        if(curI == 0 && ccs[prevI] == CornerCase::COR_STRAIGHT)
-        {
-            ALine prevLine = tempLines1[prevI];
-            _cLines[curI].XA = prevLine.XB;
-            _cLines[curI].YA = prevLine.YB;
-        }
-
-        // old code
-        if(ccs[a] == CornerCase::COR_START)
-        {
-            _cLines[curI].XB += offsetVec2.x * normalFactor;
-            _cLines[curI].YB += offsetVec2.y * normalFactor;
-        }
-        else if(ccs[a] == CornerCase::COR_END)
-        {
-            _cLines[curI].XA += offsetVec1.x * normalFactor;
-            _cLines[curI].YA += offsetVec1.y * normalFactor;
-        }
-        else if(ccs[a] == CornerCase::COR_MIDDLE)
-        {
-            _cLines[curI].XA += offsetVec1.x * normalFactor;
-            _cLines[curI].YA += offsetVec1.y * normalFactor;
-            _cLines[curI].XB += offsetVec2.x * normalFactor;
-            _cLines[curI].YB += offsetVec2.y * normalFactor;
-        }
-
-        // TODO
-        // if nextI is COR_START_STRAIGHT
-        // if prevI is COR_END_STRAIGHT
-
-        else if(ccs[a] == CornerCase::COR_START_STRAIGHT)
-        {
-            _cLines[curI].XA += offsetVec1.x * normalFactor;
-            _cLines[curI].YA += offsetVec1.y * normalFactor;
-
-            if(nextI != 0)
-            {
-                ALine nextLine = tempLines1[nextI];
-                _cLines[curI].XB = nextLine.XA;
-                _cLines[curI].YB = nextLine.YA;
-            }
-        }
-        else if(ccs[a] == CornerCase::COR_END_STRAIGHT)
-        {
-            if(prevI != tempLines1.size() - 1)
-            {
-                ALine prevLine = tempLines1[prevI];
-                _cLines[curI].XA = prevLine.XB;
-                _cLines[curI].YA = prevLine.YB;
-            }
-
-            _cLines[curI].XB += offsetVec2.x * normalFactor;
-            _cLines[curI].YB += offsetVec2.y * normalFactor;
-        }
-        else if(ccs[a] == CornerCase::COR_MIDDLE_STRAIGHT)
-        {
-            if(nextI != 0)
-            {
-                ALine nextLine = tempLines1[nextI];
-                _cLines[curI].XB = nextLine.XA;
-                _cLines[curI].YB = nextLine.YA;
-            }
-
-            if(prevI != tempLines1.size() - 1)
-            {
-                ALine prevLine = tempLines1[prevI];
-                _cLines[curI].XA = prevLine.XB;
-                _cLines[curI].YA = prevLine.YB;
-            }
-        }
-        //COR_MIDDLE_STRAIGHT
-
-
-        // end code
-        if(curI == _cLines.size() - 1 && !isTracingDone)
-        {
-            _cLines[curI].XB = tempLines1[curI].XB;
-            _cLines[curI].YB = tempLines1[curI].YB;
-        }
-
-        if(curI == 0 && !isTracingDone)
-        {
-            _cLines[curI].XA = tempLines1[curI].XA;
-            _cLines[curI].YA = tempLines1[curI].YA;
-        }
-    }
 
     /*
     // to do: refine corner
@@ -397,6 +403,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
     // bezier curves
     if(isTracingDone)
+    //if(false)
     {
         _urSegments.clear();
         _orSegments.clear();
@@ -420,7 +427,7 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
             AVector anchor1, anchor2;
             //CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
-            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.75);
+            CurveInterpolation::GetAnchors(pt1, pt2, pt3, pt4, anchor1, anchor2, 0.7);
 
             float angle1 = AngleInBetween(anchor1 - pt2, pt3 - pt2);
             float angle2 = AngleInBetween(anchor2 - pt3, pt2 - pt3);
@@ -568,6 +575,8 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             }
         }
 
+
+        //to do: uncomment this
         _cLines.clear();
         for(size_t a = 0; a < _points.size(); a++)
         {
@@ -575,16 +584,19 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             int idx2 = (a + 1) % _points.size();
             _cLines.push_back(ALine(_points[idx1], _points[idx2]));
         }
+
     }
 
 
-    if(isTracingDone)
-    {
+    //if(isTracingDone)
+    //if(false)
+    //{
         //_uQuadsSize = PrepareQuadsVAO(_urSegments, &_uQuadsVbo, &_uQuadsVao, QVector3D(0, 0, 1));
         //_oQuadsSize = PrepareQuadsVAO(_orSegments, &_oQuadsVbo, &_oQuadsVao, QVector3D(1, 0, 0));
-    }
+    //}
 
     if(isTracingDone)
+    //if(false)
     {
         _cLinesVao.destroy();
         std::cout << "layerTypeList2.size() " << layerTypeList2.size() << "\n";
@@ -596,6 +608,10 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
     else
     {
         PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
+        //if(isTracingDone)
+        //{
+        //    PrepareLinesVAO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(1.0, 0.0, 0.0));
+        //}
     }
 }
 
@@ -617,7 +633,7 @@ void TilePainter::CalculateOverUnderRibbon(std::vector<ALine> cLines, std::vecto
         ALine nextLine = cLines[nextIdx];
 
         AVector d0Left, d0Right, d1Left, d1Right;
-        GetSegmentPoints(curLine, prevLine, nextLine, 2, 2, &d0Left, &d0Right, &d1Left, &d1Right);
+        GetSegmentPoints(curLine, prevLine, nextLine, 1.5,1.5, &d0Left, &d0Right, &d1Left, &d1Right);
 
         lLines.push_back(ALine(d0Left, d1Left));
         rLines.push_back(ALine(d0Right, d1Right));

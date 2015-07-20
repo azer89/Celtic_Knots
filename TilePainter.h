@@ -49,6 +49,8 @@ private:
     AVector GetMiddlePoint(AVector a, AVector b, AVector c);
     CornerCase GetCornerCase(int i, std::vector<std::vector<CCell>> cells, std::vector<AnIndex> traceList, bool isTracingDone);
 
+    void RefineLines(std::vector<ALine>& lines, std::vector<CornerCase> ccs, bool isTracingDone);
+
     std::pair<LayerType, LayerType> GetLayerTypes(CCell curCel, AnIndex curIdx);
 
     void GeTwoSegments(AVector p0, AVector p1, AVector p2, AVector p3, RibbonSegment* segment1, RibbonSegment* segment2);
