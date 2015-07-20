@@ -233,6 +233,8 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
         // calculate an initial line
         ALine ln = GetLineInACell(curCel, gridSpacing, curIdx);
+        ln.index1 = curIdx.x;
+        ln.index2 = curIdx.y;
 
         // determine layer types (start end)
         std::pair<LayerType, LayerType> lTypes = GetLayerTypes(curCel, curIdx);
@@ -299,7 +301,6 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
         else if(ccs[a] == CornerCase::COR_START_STRAIGHT)
         {
-            //std::cout << "COR_START_STRAIGHT\n";
             _cLines[curI].XA += offsetVec1.x * normalFactor;
             _cLines[curI].YA += offsetVec1.y * normalFactor;
 
@@ -312,15 +313,12 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
         }
         else if(ccs[a] == CornerCase::COR_END_STRAIGHT)
         {
-            //std::cout << "COR_END_STRAIGHT\n";
             if(prevI != tempLines1.size() - 1)
             {
                 ALine prevLine = tempLines1[prevI];
                 _cLines[curI].XA = prevLine.XB;
                 _cLines[curI].YA = prevLine.YB;
             }
-            //_cLines[curI].XA += offsetVec1.x;
-            //_cLines[curI].YA += offsetVec1.y;
 
             _cLines[curI].XB += offsetVec2.x * normalFactor;
             _cLines[curI].YB += offsetVec2.y * normalFactor;
@@ -345,7 +343,6 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
 
 
         // end code
-
         if(curI == _cLines.size() - 1 && !isTracingDone)
         {
             _cLines[curI].XB = tempLines1[curI].XB;
@@ -358,6 +355,44 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
             _cLines[curI].YA = tempLines1[curI].YA;
         }
     }
+
+    /*
+    // to do: refine corner
+    std::vector<ALine> tempLines;
+    for(size_t a = 0; a < _cLines.size(); a++)
+    {
+        CornerCase cCase = ccs[a];
+        ALine aLine = _cLines[a];
+
+        if(cCase == CornerCase::COR_MIDDLE)
+        {
+            float xPos = gridSpacing * (float)(aLine.index1) + (gridSpacing / 2.0f);
+            float yPos = gridSpacing * (float)(aLine.index2) + (gridSpacing / 2.0f);
+
+            ALine lineA(aLine.XA, aLine.YA, xPos, yPos);
+            ALine lineB(xPos, yPos, aLine.XB, aLine.YB);
+
+            tempLines.push_back(lineA);
+            tempLines.push_back(lineB);
+
+        }
+        else
+        {
+            tempLines.push_back(aLine);
+        }
+    }
+    _cLines = tempLines;
+    */
+
+    // an example of acute corner
+    /*
+    ALine firstLine = _cLines[0];
+    ALine lineA(firstLine.XA, firstLine.YA, gridSpacing / 4.0f, gridSpacing / 4.0f);
+    ALine lineB(gridSpacing / 4.0f, gridSpacing / 4.0f, firstLine.XB, firstLine.YB);
+    _cLines.erase(_cLines.begin());
+    _cLines.insert(_cLines.begin(), lineB);
+    _cLines.insert(_cLines.begin(), lineA);
+    */
 
 
     // bezier curves
