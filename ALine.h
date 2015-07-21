@@ -9,9 +9,9 @@
 enum LineType
 {
     LINE_HORIZONTAL = 0,
-    LINE_VERTICAL = 1,
-    LINE_OTHER = 2,
-    LINE_NONE = 3,  // no line ?
+    LINE_VERTICAL   = 1,
+    LINE_OTHER      = 2,
+    LINE_NONE       = 3,
 };
 
 struct ALine
@@ -20,18 +20,11 @@ public:
     float XA;	float YA;	// start
     float XB;	float YB;	// end
 
-    // custom
-    int index1;
-    int index2;
-
     // Constructor #1
     ALine()
     {
         this->XA = -1;	this->YA = -1;
         this->XB = -1;	this->YB = -1;
-
-        this->index1 = -1;
-        this->index2 = -1;
     }
 
     // Constructor #2
@@ -39,18 +32,12 @@ public:
     {
         this->XA = XA;	this->YA = YA;
         this->XB = XB;	this->YB = YB;
-
-        this->index1 = -1;
-        this->index2 = -1;
     }
 
     ALine(AVector v1, AVector v2)
     {
         this->XA = v1.x;	this->YA = v1.y;
         this->XB = v2.x;	this->YB = v2.y;
-
-        this->index1 = -1;
-        this->index2 = -1;
     }
 
 
@@ -147,30 +134,6 @@ public:
         float cosAngle = std::abs((dx1 * dx2 + dy1 * dy2) / sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2)));
 
         return cosAngle;
-
-        /*
-        float mag1 = Magnitude();
-        float mag2 = otherLine.Magnitude();
-
-        AVector dir1 = Direction();
-        AVector dir2 = otherLine.Direction();
-
-        float a_dot_b = dir1.Dot(dir2);
-        float a_b_mag = mag1 *  mag2;
-
-        return abs(a_dot_b - a_b_mag);
-        */
-
-        /*-
-        float addValue = a_dot_b + a_b_mag;
-        if(addValue > -std::numeric_limits<float>::epsilon() && addValue < std::numeric_limits<float>::epsilon() ) { return -1; }
-
-        float subsValue = a_dot_b - a_b_mag;
-
-        if(subsValue > -std::numeric_limits<float>::epsilon() && subsValue < std::numeric_limits<float>::epsilon() ) { return 1; }
-
-        return 0;
-        */
     }
 };
 

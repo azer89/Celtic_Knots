@@ -93,8 +93,6 @@ private:
     void PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol);
 
     AnIndex GetIndex(AVector vec);
-    //bool DoesHitAWall(AnIndex idx);
-    //bool IsACorner(AnIndex idx);
     bool IsValid(AnIndex idx);
     void CalculateNarrowPath();
 

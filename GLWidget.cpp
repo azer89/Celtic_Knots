@@ -257,9 +257,6 @@ void GLWidget::mouseDoubleClick(int x, int y)
     this->repaint();
 }
 
-
-
-
 void GLWidget::HorizontalScroll(int val) { _scrollOffset.setX(val); }
 void GLWidget::VerticalScroll(int val) { _scrollOffset.setY(val); }
 void GLWidget::ZoomIn() { this->_zoomFactor += 0.05f; }
@@ -323,7 +320,7 @@ bool GLWidget::IntersectHorizontalLine(AVector pt)
 
 bool GLWidget::IntersectVerticalLine(AVector pt)
 {
-    float eps = std::numeric_limits<float>::epsilon() * 100; // why ???
+    float eps = std::numeric_limits<float>::epsilon() * 1000; // why ???
     for(int a = 0; a < _breakLines.size(); a++)
     {
         float d = DistanceToFiniteLine(_breakLines[a].GetPointA(), _breakLines[a].GetPointB(), pt);
@@ -342,7 +339,7 @@ LineType GLWidget::GetLineIntersection(AVector pt)
 {
     float dist = std::numeric_limits<float>::max();
     LineType lType = LineType::LINE_NONE;
-    float eps = std::numeric_limits<float>::epsilon() * 100; // why ???
+    float eps = std::numeric_limits<float>::epsilon() * 1000; // why ???
     for(int a = 0; a < _breakLines.size(); a++)
     {
         ALine aLine = _breakLines[a];
@@ -481,9 +478,6 @@ void GLWidget::TraceOneStep()
             { endVec = AVector(curIdx.x  * _gridSpacing, curIdx.y * _gridSpacing); }
         LineType hitType = GetLineIntersection(endVec);
 
-
-        // new code
-
         // enter
         if(curDir == DirectionType::DIR_RIGHT &&
            IsValid(rIdx) &&
@@ -574,6 +568,7 @@ void GLWidget::TraceOneStep()
                 _cells[rIdx.x][rIdx.y]._straightness == Straightness::ST_HORIZONTAL) // downright --> right
         {
             //std::cout << "[2] " << "downright --> right" << " - " << rIdx.x << " " << rIdx.y << "\n";
+            //std::cout << curDir << " " << hitType << " " << IsValid(rIdx) << " " << _cells[rIdx.x][rIdx.y]._straightness << "\n";
             // rIdx
             _traceList.push_back(rIdx);
             _cells[rIdx.x][rIdx.y]._directionType = DirectionType::DIR_RIGHT;
@@ -698,6 +693,7 @@ void GLWidget::TraceOneStep()
             else
             {
                 //std::cout << "[16] " << hitType << " - " << dIdx.x << " " << dIdx.y << "\n";
+                //std::cout << curDir << " " << hitType << " " << IsValid(rIdx) << " " << _cells[rIdx.x][rIdx.y]._straightness << "\n";
                 _traceList.push_back(dIdx);
                 _cells[dIdx.x][dIdx.y]._directionType = DirectionType::DIR_DOWNLEFT;
             }

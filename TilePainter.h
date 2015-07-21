@@ -66,12 +66,6 @@ private:
 
     double AngleInBetween(AVector vec1, AVector vec2);
     void GetSegmentPoints(ALine curLine, ALine prevLine, ALine nextLine, double t0, double t1, AVector* pA, AVector* pB, AVector* pC, AVector* pD);
-    //AVector RotatePoint(float cx,float cy,float angle, AVector p);
-
-    //void CreateCorner(CCell cell, AnIndex idx, float gridSpacing);
-    //void CreateCross(CCell cell, AnIndex idx, float gridSpacing);
-    //void CreateSlash(CCell cell, AnIndex idx, float gridSpacing);
-    //void CreateStraight(CCell cell, AnIndex idx, float gridSpacing);
 
     double DistanceToFiniteLine(AVector v, AVector w, AVector p);
 
