@@ -544,12 +544,12 @@ void TilePainter::SetTiles(std::vector<std::vector<CCell>> cells,
         std::cout << "layerTypeList2.size() " << layerTypeList2.size() << "\n";
         std::rotate(layerTypeList2.begin(), layerTypeList2.begin() + 1, layerTypeList2.end());  // move first to the end
         CalculateOverUnderRibbon(_cLines, layerTypeList2);
-        PrepareLinesVAO2(_cLines, &_cLinesVbo, &_cLinesVao, layerTypeList2);
-        PrepareLinesVAO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(1.0, 0.0, 0.0));
+        PrepareLinesVBO2(_cLines, &_cLinesVbo, &_cLinesVao, layerTypeList2);
+        PrepareLinesVBO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(1.0, 0.0, 0.0));
     }
     else
     {
-        PrepareLinesVAO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
+        PrepareLinesVBO1(_cLines, &_cLinesVbo, &_cLinesVao, QVector3D(1.0, 0.0, 0.0));
         //if(isTracingDone)
         //{
         //    PrepareLinesVAO1(_anchorLines, &_anchorLinesVbo, &_anchorLinesVao, QVector3D(0.0, 0.0, 1.0));
@@ -599,11 +599,11 @@ void TilePainter::CalculateOverUnderRibbon(std::vector<ALine> cLines, std::vecto
         }
     }
 
-    PrepareQuadsVAO2(_urLines, _ulLines, &_uQuadsVbo, &_uQuadsVao, QVector3D(1, 1, 1));
-    PrepareQuadsVAO2(_orLines, _olLines, &_oQuadsVbo, &_oQuadsVao, QVector3D(1, 1, 1));
+    PrepareQuadsVBO2(_urLines, _ulLines, &_uQuadsVbo, &_uQuadsVao, QVector3D(1, 1, 1));
+    PrepareQuadsVBO2(_orLines, _olLines, &_oQuadsVbo, &_oQuadsVao, QVector3D(1, 1, 1));
 
-    PrepareLinesVAO3(_urLines, _ulLines, &_uLinesVbo, &_uLinesVao, QVector3D(0, 0, 0));
-    PrepareLinesVAO3(_orLines, _olLines, &_oLinesVbo, &_oLinesVao, QVector3D(0, 0, 0));
+    PrepareLinesVBO3(_urLines, _ulLines, &_uLinesVbo, &_uLinesVao, QVector3D(0, 0, 0));
+    PrepareLinesVBO3(_orLines, _olLines, &_oLinesVbo, &_oLinesVao, QVector3D(0, 0, 0));
 }
 
 void TilePainter::CalculateRibbonLR(RibbonSegment* segment)
@@ -660,12 +660,16 @@ void TilePainter::GeTwoSegments(AVector p0, AVector p1, AVector p2, AVector p3, 
     segment2->_anchor2 = AVector(x23, y23);
 }
 
-void TilePainter::PrepareLinesVAO3(std::vector<ALine> rLines, std::vector<ALine> lLines, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
+void TilePainter::PrepareLinesVBO3(std::vector<ALine> rLines, std::vector<ALine> lLines, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
 {
-    if(vao->isCreated()) { vao->destroy(); }
-
-    vao->create();
-    vao->bind();
+    // the vao is created only once
+    bool isInit = false;
+    if(!vao->isCreated())
+    {
+        vao->create();
+        vao->bind();
+        isInit = true;
+    }
 
     QVector<VertexData> data;
     for(uint a = 0; a < rLines.size(); a++)
@@ -677,7 +681,10 @@ void TilePainter::PrepareLinesVAO3(std::vector<ALine> rLines, std::vector<ALine>
         data.append(VertexData(QVector3D(lLines[a].XB, lLines[a].YB,  0), QVector2D(), vecCol));
     }
 
-    vbo->create();
+    if(!vbo->isCreated())
+    {
+        vbo->create();
+    }
     vbo->bind();
     vbo->allocate(data.data(), data.size() * sizeof(VertexData));
 
@@ -692,15 +699,22 @@ void TilePainter::PrepareLinesVAO3(std::vector<ALine> rLines, std::vector<ALine>
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    vao->release();
+    if(isInit)
+    {
+        vao->release();
+    }
 }
 
-void TilePainter::PrepareQuadsVAO2(std::vector<ALine> rLines, std::vector<ALine> lLines, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
+void TilePainter::PrepareQuadsVBO2(std::vector<ALine> rLines, std::vector<ALine> lLines, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
 {
-    if(vao->isCreated()) { vao->destroy(); }
-
-    vao->create();
-    vao->bind();
+    // the vao is created only once
+    bool isInit = false;
+    if(!vao->isCreated())
+    {
+        vao->create();
+        vao->bind();
+        isInit = true;
+    }
 
     QVector<VertexData> data;
     for(uint a = 0; a < rLines.size(); a++)
@@ -713,7 +727,10 @@ void TilePainter::PrepareQuadsVAO2(std::vector<ALine> rLines, std::vector<ALine>
 
     }
 
-    vbo->create();
+    if(!vbo->isCreated())
+    {
+        vbo->create();
+    }
     vbo->bind();
     vbo->allocate(data.data(), data.size() * sizeof(VertexData));
 
@@ -728,35 +745,27 @@ void TilePainter::PrepareQuadsVAO2(std::vector<ALine> rLines, std::vector<ALine>
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    vao->release();
+    if(isInit)
+    {
+        vao->release();
+    }
 }
 
-int TilePainter::PrepareQuadsVAO1(std::vector<RibbonSegment> ribbonSegments, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
+int TilePainter::PrepareQuadsVBO1(std::vector<RibbonSegment> ribbonSegments, QOpenGLBuffer* vbo, QOpenGLVertexArrayObject* vao, QVector3D vecCol)
 {
-    if(vao->isCreated()) { vao->destroy(); }
-
-    vao->create();
-    vao->bind();
+    // the vao is created only once
+    bool isInit = false;
+    if(!vao->isCreated())
+    {
+        vao->create();
+        vao->bind();
+        isInit = true;
+    }
 
     int nSize = 0;
     QVector<VertexData> data;
     for(uint a = 0; a < ribbonSegments.size(); a++)
     {
-        /*
-        std::vector<ALine> rLines = ribbonSegments[a]._rLines;
-        std::vector<ALine> lLines = ribbonSegments[a]._lLines;
-        nSize += cLines.size() * 4;
-        for(uint b = 0; b < cLines.size(); b++)
-        {
-            data.append(VertexData(QVector3D(rLines[b].XA, rLines[b].YA,  0), QVector2D(), vecCol));
-            data.append(VertexData(QVector3D(rLines[b].XB, rLines[b].YB,  0), QVector2D(), vecCol));
-
-            data.append(VertexData(QVector3D(lLines[b].XA, lLines[b].YA,  0), QVector2D(), vecCol));
-            data.append(VertexData(QVector3D(lLines[b].XB, lLines[b].YB,  0), QVector2D(), vecCol));
-        }
-        */
-
-
         std::vector<ALine> cLines = ribbonSegments[a]._cLines;
         nSize += cLines.size() * 2;
         for(uint b = 0; b < cLines.size(); b++)
@@ -767,7 +776,10 @@ int TilePainter::PrepareQuadsVAO1(std::vector<RibbonSegment> ribbonSegments, QOp
 
     }
 
-    vbo->create();
+    if(!vbo->isCreated())
+    {
+        vbo->create();
+    }
     vbo->bind();
     vbo->allocate(data.data(), data.size() * sizeof(VertexData));
 
@@ -782,20 +794,24 @@ int TilePainter::PrepareQuadsVAO1(std::vector<RibbonSegment> ribbonSegments, QOp
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    vao->release();
+    if(isInit)
+    {
+        vao->release();
+    }
 
     return nSize;
 }
 
-void TilePainter::PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)
+void TilePainter::PrepareLinesVBO1(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)
 {
-    if(linesVao->isCreated())
+    // the vao is created only once
+    bool isInit = false;
+    if(!linesVao->isCreated())
     {
-        linesVao->destroy();
+        linesVao->create();
+        linesVao->bind();
+        isInit = true;
     }
-
-    linesVao->create();
-    linesVao->bind();
 
     QVector<VertexData> data;
     for(uint a = 0; a < lines.size(); a++)
@@ -804,7 +820,10 @@ void TilePainter::PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* line
         data.append(VertexData(QVector3D(lines[a].XB, lines[a].YB,  0), QVector2D(), vecCol));
     }
 
-    linesVbo->create();
+    if(!linesVbo->isCreated())
+    {
+        linesVbo->create();
+    }
     linesVbo->bind();
     linesVbo->allocate(data.data(), data.size() * sizeof(VertexData));
 
@@ -819,18 +838,21 @@ void TilePainter::PrepareLinesVAO1(std::vector<ALine> lines, QOpenGLBuffer* line
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    linesVao->release();
+    if(isInit)
+    {
+        linesVao->release();
+    }
 }
 
-void TilePainter::PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, std::vector<LayerType> layerTypeList)
+void TilePainter::PrepareLinesVBO2(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, std::vector<LayerType> layerTypeList)
 {
-    if(linesVao->isCreated())
+    bool isInit = false;
+    if(!linesVao->isCreated())
     {
-        linesVao->destroy();
+        linesVao->create();
+        linesVao->bind();
+        isInit = true;
     }
-
-    linesVao->create();
-    linesVao->bind();
 
     QVector<VertexData> data;
     for(uint a = 0; a < lines.size(); a++)
@@ -842,7 +864,10 @@ void TilePainter::PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* line
         data.append(VertexData(QVector3D(lines[a].XB, lines[a].YB,  0), QVector2D(), vecCol));
     }
 
-    linesVbo->create();
+    if(!linesVbo->isCreated())
+    {
+        linesVbo->create();
+    }
     linesVbo->bind();
     linesVbo->allocate(data.data(), data.size() * sizeof(VertexData));
 
@@ -857,7 +882,10 @@ void TilePainter::PrepareLinesVAO2(std::vector<ALine> lines, QOpenGLBuffer* line
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    linesVao->release();
+    if(isInit)
+    {
+        linesVao->release();
+    }
 }
 
 void TilePainter::DrawTiles()

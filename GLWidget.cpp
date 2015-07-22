@@ -205,7 +205,7 @@ void GLWidget::mouseMoveEvent(int x, int y)
         {
             std::vector<ALine> linev;
             linev.push_back(_drawBreakLine);
-            PrepareLinesVAO(linev, &_drawBreakVbo, &_drawBreakVao, QVector3D(0.0, 0.0, 0.0));
+            PrepareLinesVBO(linev, &_drawBreakVbo, &_drawBreakVao, QVector3D(0.0, 0.0, 0.0));
         }
     }
 
@@ -234,7 +234,7 @@ void GLWidget::mouseReleaseEvent(int x, int y)
         _drawBreakLine.GetLineType() == LineType::LINE_VERTICAL))
     {
         _breakLines.push_back(_drawBreakLine);
-        PrepareLinesVAO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
+        PrepareLinesVBO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
     }
 
     CalculateNarrowPath();
@@ -761,7 +761,7 @@ void GLWidget::InitCells()
     _breakLines.push_back(ALine(0, 0, 0, _img_height));
     _breakLines.push_back(ALine(_img_width, 0, _img_width, _img_height));
     _breakLines.push_back(ALine(0, _img_height, _img_width, _img_height));
-    PrepareLinesVAO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
+    PrepareLinesVBO(_breakLines, &_breakLinesVbo, &_breakLinesVao, QVector3D(0.0, 0.0, 0.0));
 
 
     for(int a = 0; a < _actualGridSize.width(); a++)
@@ -803,7 +803,7 @@ void GLWidget::InitCells()
                 { _cellLines.push_back(ALine(bottomLeftPt, bottomRightPt)); }
         }
     }
-    PrepareLinesVAO(_cellLines, &_cellLinesVbo, &_cellLinesVao, QVector3D(0.0, 0.0, 0.0));
+    PrepareLinesVBO(_cellLines, &_cellLinesVbo, &_cellLinesVao, QVector3D(0.0, 0.0, 0.0));
 
     _shouldUpdateScrolls = true;
 }
@@ -903,7 +903,7 @@ void GLWidget::CreateCurveVAO()
 {
     // POINTS VAO
     QVector3D vecCol = QVector3D(1.0, 0.0, 0.0);
-    PreparePointsVAO(_points, &_pointsVbo, &_pointsVao, vecCol);
+    PreparePointsVBO(_points, &_pointsVbo, &_pointsVao, vecCol);
 
     // LINES VAO
     vecCol = QVector3D(0.0, 0.5, 1.0);
@@ -913,16 +913,20 @@ void GLWidget::CreateCurveVAO()
         if(a < _points.size() - 1) { lines.push_back(ALine(_points[a], _points[a + 1])); }
         else { lines.push_back(ALine(_points[a], _points[0])); }
     }
-    PrepareLinesVAO(lines, &_linesVbo, &_linesVao, vecCol);
+    PrepareLinesVBO(lines, &_linesVbo, &_linesVao, vecCol);
 }
 
-void GLWidget::PreparePointsVAO(std::vector<AVector> points, QOpenGLBuffer* ptsVbo, QOpenGLVertexArrayObject* ptsVao, QVector3D vecCol)
+void GLWidget::PreparePointsVBO(std::vector<AVector> points, QOpenGLBuffer* ptsVbo, QOpenGLVertexArrayObject* ptsVao, QVector3D vecCol)
 {
-    if(ptsVao->isCreated())
-        { ptsVao->destroy(); }
+    bool isInit = false;
+    if(!ptsVao->isCreated())
+    {
+        ptsVao->create();
+        ptsVao->bind();
+        isInit = true;
+    }
 
-    ptsVao->create();
-    ptsVao->bind();
+
 
     QVector<VertexData> data;
     for(uint a = 0; a < points.size(); a++)
@@ -943,18 +947,21 @@ void GLWidget::PreparePointsVAO(std::vector<AVector> points, QOpenGLBuffer* ptsV
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    ptsVao->release();
+    if(isInit)
+    {
+        ptsVao->release();
+    }
 }
 
-void GLWidget::PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)
-{
-    if(linesVao->isCreated())
+void GLWidget::PrepareLinesVBO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo, QOpenGLVertexArrayObject* linesVao, QVector3D vecCol)
+{    
+    bool isInit = false;
+    if(!linesVao->isCreated())
     {
-        linesVao->destroy();
+        linesVao->create();
+        linesVao->bind();
+        isInit = true;
     }
-
-    linesVao->create();
-    linesVao->bind();
 
     QVector<VertexData> data;
     for(uint a = 0; a < lines.size(); a++)
@@ -978,7 +985,10 @@ void GLWidget::PrepareLinesVAO(std::vector<ALine> lines, QOpenGLBuffer* linesVbo
     _shaderProgram->enableAttributeArray(_colorLocation);
     _shaderProgram->setAttributeBuffer(_colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    linesVao->release();
+    if(isInit)
+    {
+        linesVao->release();
+    }
 }
 
 void GLWidget::SaveToSvg()
